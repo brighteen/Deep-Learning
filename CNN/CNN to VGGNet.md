@@ -96,6 +96,7 @@
 
 ### 9.1 LeNet
 - **목적:** MNIST 숫자 인식을 위해 개발
+![LeNet flow](LeNet_Architecture.png)
 - **구성:**
   - 입력 이미지 (Zero-padding)
   - Convolution → Subsampling → Convolution → Subsampling → FCN
@@ -103,6 +104,7 @@
 ### 9.2 AlexNet
 - **특징:**
   - 필터 크기를 점차 줄이며 큰 특징부터 작은 특징까지 인식
+![AlexNet flow](AlexNet_Architecture.png)
   - **ReLU 도입:** 활성화 함수로 ReLU를 최초 도입
   - **Dropout:** 과적합 방지 기법
   - **Data Augmentation:** 데이터 증강 기법 활용
@@ -111,10 +113,8 @@
 
 ### 9.3 VGGNet
 - **주요 아이디어:** 네트워크 깊이에 따른 성능 향상 탐구
+![VGGNet](VGGNet_Architecture.png)
 - **구성:**
   - **필터:** 3x3 필터만을 사용하여 깊이에 집중
   - **문제점:** 네트워크가 깊어짐에 따라 gradient vanishing 문제 발생 가능성
 
----
-
-이 문서는 CNN의 기본 개념부터 주요 네트워크 구조까지 체계적으로 정리한 자료입니다.
