@@ -5,7 +5,7 @@
      입력 이미지의 각 위치에서 1x1 크기의 필터를 적용하며, 필터의 깊이는 입력 채널 수(C)와 같음  
      예를 들어 (1x1xC) 필터를 F개의 필터와 곱하면 출력 채널 수는 F가 됨
 
-![1x1 Convolution Architecture](1x1Convolution.png)
+![1x1 Convolution Architecture](Images/1x1Convolution.png)
 
 2. **공간적 크기 유지 및 채널 조절**  
    - **공간적 변화 없음**  
@@ -26,7 +26,7 @@
 
 Inception Module은 다양한 크기의 필터를 병렬로 사용해 공간적 및 채널 간 상관관계를 독립적으로 살펴보며, 풍부한 특징(feature)을 추출할 수 있는 구조임
 
-![Inception Module](Inception_Architecture.png)
+![Inception Module](Images/Inception_Architecture.png)
 
 1. **구성 요소**  
    - **1x1 Convolution**  
@@ -48,4 +48,4 @@ Inception Module은 다양한 크기의 필터를 병렬로 사용해 공간적 
 
 
 ## The difference between Convolution and Inception
-![Convolution and Inception](ConvWithInception.png)
+![Convolution and Inception](Images/ConvWithInception.png)
