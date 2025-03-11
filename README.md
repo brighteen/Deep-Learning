@@ -1,2 +1,1 @@
-# DL
-Deep Learning Notes
+# FOR DEEP LEARNING
