@@ -1,0 +1,5 @@
+train: 3_1\detect\dataset\train\images
+val: 3_1\detect\dataset\val\images
+
+names:
+  0: chicken
