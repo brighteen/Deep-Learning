@@ -4,3 +4,5 @@ yolov8m.pt
 yolov8l.pt
 yolov8x.pt
 yolov5s.pt
+
+best.pt

@@ -3,9 +3,10 @@ from ultralytics import YOLO
 
 # 모델 로드
 model = YOLO("yolov8s.pt")
+# model = YOLO("best.pt")
 
 # 비디오 파일 열기
-cap = cv2.VideoCapture("datas/닭축사.mp4")
+cap = cv2.VideoCapture("datas/도로영상1.mp4")
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -13,7 +14,7 @@ while cap.isOpened():
         break
 
     # 각 프레임에 대해 예측 수행
-    results = model.predict(frame, save=True)
+    results = model.predict(frame)
 
     # 결과 시각화 (프레임에 박스 그리기)
     annotated_frame = results[0].plot()
