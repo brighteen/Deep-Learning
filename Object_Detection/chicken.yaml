@@ -1,0 +1,5 @@
+train: C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\dataset\train\images
+val: C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\dataset\val\images
+
+names:
+  0: chicken
