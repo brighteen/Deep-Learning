@@ -9,3 +9,4 @@ graph TD;
     E --> F[C5: Fully Connected Convolution (120 뉴런)];
     F --> G[F6: Fully Connected (84 뉴런)];
     G --> H[Output: Classification (10 클래스)];
+```
