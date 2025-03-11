@@ -2,11 +2,11 @@ import cv2
 from ultralytics import YOLO
 
 # 모델 로드
-model = YOLO("yolov8s.pt")
-# model = YOLO("best.pt")
+# model = YOLO("yolov8s.pt")
+model = YOLO("best.pt")
 
 # 비디오 파일 열기
-cap = cv2.VideoCapture("datas/도로영상1.mp4")
+cap = cv2.VideoCapture("datas/chicken_farm.mp4")
 
 while cap.isOpened():
     ret, frame = cap.read()
