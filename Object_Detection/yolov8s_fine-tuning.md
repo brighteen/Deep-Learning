@@ -1,6 +1,7 @@
 ## 현재 진행 상황
 - yolov8s 모델에는 'chicken'이라는 레이블이 없어서 닭을 'bird'로 인식
 - fine-tuning으로 'chicken'레이블을 만들어 학습을 시켰지만?
+- [375개 이미지 학습(출처 kaggle)](https://www.kaggle.com/datasets/hayriyigit/chicken-detection?resource=download)
 - 모델이 **모든 object를 'chicken'으로 분류**함.
 
 ![](detect/pridict6/chickens.png)
