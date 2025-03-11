@@ -1,5 +1,5 @@
-train: /home/a202192022/3_1/object_detection/dataset/train/images
-val: /home/a202192022/3_1/object_detection/dataset/val/images
+train: dataset/train/images
+val: dataset/val/images
 
 names:
   0: chicken
