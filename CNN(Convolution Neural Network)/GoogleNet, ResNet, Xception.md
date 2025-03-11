@@ -1,5 +1,5 @@
 # GoogLeNet
-![](images/GoogleNet_Architecture.png)
+![GoogleNet](Images/GoogleNet_Architecture.png)
 - **Inception 모듈**
   - 여러 필터를 병렬로 처리함
   - 다른 DNN 모델보다 파라미터 수가 적고 error율이 낮음 (네트워크 depth가 깊어서임)
@@ -16,13 +16,13 @@
 - **도입 배경**
   - 모델 depth 증가 시 성능 저하(과적합, 기울기 소실 등) 문제 발생함
 
-![](images/깊이에%20따른%20모델%20성능.png)
+![](Images/깊이에%20따른%20모델%20성능.png)
 
 - **Residual Block**
   - Skip-connection 포함하여 선형, 비선형 변환 및 pooling 과정을 건너뜀
   - 2개의 Convolution 연산마다 적용됨
 
-![](images/ResidualBlock.png)
+![](Images/ResidualBlock.png)
   
 - **기타 특징**
   - 대표적인 모델 사용 예: AlphaFold
