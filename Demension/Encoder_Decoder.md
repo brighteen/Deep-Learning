@@ -150,10 +150,11 @@ $$
 ### **[정리요약]**
 
 - **Reconstruction Error를 최소화하는 문제**  
-  $$\text{Original Problem: Reconstruction error Minimization}\\$$
-  $$\quad \min_{d} \sum_i \|z_i - r(z_i)\|_2^2$$
-  $$\quad \text{subject to } r(z) = DD'(z)$$
-  $$\quad \|d\| = 1$$
+  $$\text{Original Problem: Reconstruction error Minimization} \\
+  \quad \min_{d} \sum_i \|z_i - r(z_i)\|_2^2 \\
+  \quad \text{subject to } r(z) = DD'(z) \\
+  \quad \|d\| = 1 \\ $$
+  
   $$\text{Simple Reconstruction error Minimization Problem}$$
   $$\quad \min_{d} \sum_i \|z'_i - z'_i dd'\|_2^2$$
   $$\quad \text{subject to } \|d\| = 1$$
