@@ -6,12 +6,7 @@
   $(n_1 \times n_0)$ 크기의 Matrix $A$를 이용하여 $(n_0 \times 1)$ 차원의 벡터 $z$에 곱(선형변환)하면  
   $(n_1 \times 1)$ 차원의 벡터 $\tilde{z}$를 얻을 수 있음
 
- $$ 
- \underset{(n_1 \times 1)}{\tilde{z}} 
-  = 
-  \underset{(n_1 \times n_0)}{A} 
-  \ \underset{(n_0 \times 1)}{z}
-  $$
+ $$\underset{(n_1 \times 1)}{\tilde{z}} = \underset{(n_1 \times n_0)}{A} \ \underset{(n_0 \times 1)}{z}$$
   
 
 - **Matrix 곱은 다음과 같은 선형변환임**  
