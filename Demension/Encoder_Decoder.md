@@ -111,9 +111,9 @@ $$
 
 - 가정 2. $D^T D = I$로 인해,  
   $$\tilde{z}' D' D \tilde{z} = \tilde{z}' \tilde{z}$$
-- 따라서 최소화해야 할 목적함수는
+- 따라서 최소화해야 할 목적함수는  
   $$z'z - 2z'D\tilde{z} + \tilde{z}'\tilde{z}$$
-  $\tilde{z}$ 관련 항($- 2z'D\tilde{z} + \tilde{z}'\tilde{z}$)만 고려하면 된다($z'z$는 상수)
+> $\tilde{z}$ 관련 항($- 2z'D\tilde{z} + \tilde{z}'\tilde{z}$)만 고려하면 된다($z'z$는 상수)
 
 
 ## **4. 최적 Encoding Matrix $E$ 찾기**
