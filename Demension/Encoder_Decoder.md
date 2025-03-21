@@ -103,17 +103,17 @@ $$
 
 #### (2) 차원축소된 최적 벡터 $\tilde{z}^*$와 Reconstruction Loss
 
-- $\tilde{z}^*$를 최적의 $\tilde{z}$ 라고 하면,
+- $\tilde{z}^*$를 최적의 $\tilde{z}$ 라고 하면,  
   $$\tilde{z}^* = \arg\min_{\tilde{z}} \|z - D\tilde{z}\|_2^2$$
 
-- $\|z - D\tilde{z}\|_2^2$를 전개하면,
-  $$\|z - D\tilde{z}\|_2^2 = (z - D\tilde{z})'(z - D\tilde{z}) = z'z - 2z'D\tilde{z} + \tilde{z}'D'D\tilde{z}$$
+- $\|z - D\tilde{z}\|_2^2$를 전개하면,  
+  $$\|z - D\tilde{z}\|_2^2 = (z - D\tilde{z})'(z - D\tilde{z}) \\ = z'z - 2z'D\tilde{z} + \tilde{z}'D'D\tilde{z}$$
 
-- 가정 2 $D^T D = I$로 인해,  
+- 가정 2. $D^T D = I$로 인해,  
   $$\tilde{z}' D' D \tilde{z} = \tilde{z}' \tilde{z}$$
-  따라서 최소화해야 할 목적함수는
+- 따라서 최소화해야 할 목적함수는
   $$z'z - 2z'D\tilde{z} + \tilde{z}'\tilde{z}$$
-  에서 $\tilde{z}$ 관련 항($- 2z'D\tilde{z} + \tilde{z}'\tilde{z}$)만 고려하면 된다($z'z$는 상수)
+  $\tilde{z}$ 관련 항($- 2z'D\tilde{z} + \tilde{z}'\tilde{z}$)만 고려하면 된다($z'z$는 상수)
 
 
 ## **4. 최적 Encoding Matrix $E$ 찾기**
