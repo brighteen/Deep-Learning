@@ -104,7 +104,7 @@ $$
 #### (2) 차원축소된 최적 벡터 $\tilde{z}^*$와 Reconstruction Loss
 $\tilde{z}^{*}$
 
-- $\tilde{z}^*$를 최적의 $\tilde{z}$ 라고 하면,  
+- $\tilde{z}^{*}$를 최적의 $\tilde{z}$ 라고 하면,  
   $$\tilde{z}^{*} = \arg\min_{\tilde{z}} \|z - D\tilde{z}\|_2^2$$
 
 - $\|z - D\tilde{z}\|_2^2$를 전개하면,  
