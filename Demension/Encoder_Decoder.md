@@ -124,9 +124,9 @@ $$
   $$\min_{\tilde{z}} \Bigl(-2z'D\tilde{z} + \tilde{z}'\tilde{z}\Bigr)$$
 - 최적 $\tilde{z}^*$는 위 식을 $\tilde{z}$로 편미분하여 0이 되는 점에서 얻어짐:
 
-  $$\frac{\partial}{\partial \tilde{z}} 
-  \Bigl(-2 z'D\tilde{z} + \tilde{z}'\tilde{z}\Bigr) 
+  $$\frac{\partial (-2 z'D\tilde{z} + \tilde{z}'\tilde{z})}{\partial \tilde{z}}  
   = -2D'z + 2\tilde{z}^* = 0$$
+  
   $$\Longrightarrow 
   \tilde{z}^* = D'z$$
 
