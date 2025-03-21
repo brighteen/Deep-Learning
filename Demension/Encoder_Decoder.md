@@ -103,8 +103,8 @@ $$
 
 #### (2) 차원축소된 최적 벡터 $\tilde{z}^*$와 Reconstruction Loss
 
-- $\tilde{z}^*$를 최적의 $\tilde{z}$ 라고 하면,  
-  $$\tilde{z}^* = \arg\min_{\tilde{z}} \|z - D\tilde{z}\|_2^2$$
+- $\tilde{z}^{*}$를 최적의 $\tilde{z}$ 라고 하면,  
+  $$\tilde{z}^{*} = \arg\min_{\tilde{z}} \|z - D\tilde{z}\|_2^2$$
 
 - $\|z - D\tilde{z}\|_2^2$를 전개하면,  
   $$\|z - D\tilde{z}\|_2^2 = (z - D\tilde{z})'(z - D\tilde{z}) \\ = z'z - 2z'D\tilde{z} + \tilde{z}'D'D\tilde{z}$$
@@ -153,12 +153,12 @@ $$
   $$\text{Original Problem: Reconstruction error Minimization}$$ <br>
   $$\underset{d}{min} \sum_i \|z_i - r(z_i)\|_2^2$$ <br>
   $$\quad \text{subject to } r(z) = DD'(z)$$ <br>
-  $$\quad \|d\| = 1 \\ $$ <br><br>
-  $$$$
+  $$\quad \|d\| = 1 \\ $$ <br>
+
 
   $$\text{Simple Reconstruction error Minimization Problem}$$ <br>
   $$\underset{d}{min} \sum_i \|z'_i - z'_i dd'\|_2^2$$ <br>
-  $$\quad \text{subject to } \|d\| = 1$$ <br><br>
+  $$\quad \text{subject to } \|d\| = 1$$ <br>
 
   $$\text{Trace로 표현한 Maximization Problem}$$ <br>
   $$\underset{d}{max} \ \mathrm{Tr}(Z'Z)$$ <br>
