@@ -7,3 +7,6 @@ yolov5s.pt
 
 best.pt
 best_chick.pt
+
+datas/
+dataset/
