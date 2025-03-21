@@ -41,7 +41,8 @@
     가 원래 z와 같아지거나(또는 차이가 최소화) 되도록 하는 과정
 
 $$\underset{(n_0 \times 1)}{r(z)}$$
-$$=\underset{(n_{_0} \times n_{_1})}{D}\underset{(n_{_1} \times 1)}{\tilde z} = \underset{(n_{_0} \times n_{_1})}{D}\underset{(n_{_1} \times n_{_0})}{E}\underset{(n_{_0} \times 1)}{z}$$
+$$=\underset{(n_{_0} \times n_{_1})}{D}$$
+$$\underset{(n_{_1} \times 1)}{\tilde z} = \underset{(n_{_0} \times n_{_1})}{D}\underset{(n_{_1} \times n_{_0})}{E}\underset{(n_{_0} \times 1)}{z}$$
 
 $$
 r(z) \approx z
