@@ -16,7 +16,7 @@
   $\tilde{z}$로 만드는 변환이라고 볼 수 있음
 
 ![Case1, Case2, Case3를 통한 차원변환 예시](Images/matrix곱=선형변환.png)
-*동일 차원, 낮은 차원, 높은 차원으로의 선형변환*
+> *동일 차원, 낮은 차원, 높은 차원으로의 선형변환*
 
 
 ## **2. Matrix곱을 이용한 Encoding과 Decoding**
@@ -47,7 +47,7 @@ r(z) \approx z
 $$
 
 ![Encoding-Decoding 구조](Images/차원축소,확대.png)
-> *고차원 벡터 $z$ → 저차원 벡터 $\tilde{z}$ → reconstruction vector $r(z)$*
+> 고차원 벡터 $z$ → 저차원 벡터 $\tilde{z}$ → reconstruction vector $r(z)$
 
 
 ### **2.2 Encoding과 Decoding 과정의 Optimization 문제**
@@ -63,7 +63,7 @@ $$
 $$
 
 ![Ez -> DEz 과정의 기하학적 예시](<Images/E_D Process.png>)
-*$z$, $\tilde{z} = Ez$, $r(z) = DEz$ 관계도*
+> *$z$, $\tilde{z} = Ez$, $r(z) = DEz$ 관계도*
 
 
 ## **3. 최적 Reconstruction을 찾기 위한 조건과 Reconstruction Loss**
