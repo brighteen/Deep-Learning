@@ -63,7 +63,7 @@ $$
 $$
 
 ![Ez -> DEz 과정의 기하학적 예시](<Images/E_D Process.png>)
-> *$z$, $\tilde{z} = Ez$, $r(z) = DEz$ 관계도*
+> $z$, $\tilde{z} = Ez$, $r(z) = DEz$ 관계도
 
 
 ## **3. 최적 Reconstruction을 찾기 위한 조건과 Reconstruction Loss**
@@ -98,18 +98,18 @@ $$
 1. **Decoding Matrix** $D$를 먼저 고려  
    $$r(z) = D\tilde{z}$$
 2. 그 후, $D$를 이용해 **Encoding Matrix** $E$를 찾음  
-3. 두 벡터 $r(z)$와 $z$ 간의 거리(예: $L_2$-norm의 제곱)가 최소화되도록 $D$를 결정  
+3. 두 벡터 $r(z)$와 $z$ 간의 거리(예: $L_2$-norm의 제곱)를 최소화하는 $D$를 탐색색  
    $$L_2^2 = \|z - r(z)\|_2^2 = \|z - DEz\|_2^2$$
 
 #### (2) 차원축소된 최적 벡터 $\tilde{z}^*$와 Reconstruction Loss
 
-- $\tilde{z}^*$를 최적의 $\tilde{z}$라고 하면,
+- $\tilde{z}^*$를 최적의 $\tilde{z}$ 라고 하면,
   $$\tilde{z}^* = \arg\min_{\tilde{z}} \|z - D\tilde{z}\|_2^2$$
+
 - $\|z - D\tilde{z}\|_2^2$를 전개하면,
-  $$\|z - D\tilde{z}\|_2^2 
-  = (z - D\tilde{z})'(z - D\tilde{z})
-  = z'z - 2z'D\tilde{z} + \tilde{z}'D'D\tilde{z}$$
-- 가정 2 $D^T D = I$로 인해,
+  $$\|z - D\tilde{z}\|_2^2 = (z - D\tilde{z})'(z - D\tilde{z}) = z'z - 2z'D\tilde{z} + \tilde{z}'D'D\tilde{z}$$
+
+- 가정 2 $D^T D = I$로 인해,  
   $$\tilde{z}' D' D \tilde{z} = \tilde{z}' \tilde{z}$$
   따라서 최소화해야 할 목적함수는
   $$z'z - 2z'D\tilde{z} + \tilde{z}'\tilde{z}$$
