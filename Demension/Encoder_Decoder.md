@@ -150,7 +150,7 @@ $$
 ### **[정리요약]**
 
 - **Reconstruction Error를 최소화하는 문제**  
-  $$\text{Original Problem: Reconstruction error Minimization}$$
+  $$\text{Original Problem: Reconstruction error Minimization}\\$$
   $$\quad \min_{d} \sum_i \|z_i - r(z_i)\|_2^2$$
   $$\quad \text{subject to } r(z) = DD'(z)$$
   $$\quad \|d\| = 1$$
@@ -163,6 +163,24 @@ $$
 
 
 ---
+
+  \[
+  \begin{align}
+  & (\text{Original Problem: Reconstruction error Minimization}) \\
+  & \quad \min_{d} \sum_i \|z_i - r(z_i)\|_2^2, \\
+  & \quad \text{subject to } r(z) = DD'(z), \\
+  & \quad \|d\| = 1. \\
+  \\
+  & (\text{Simple Reconstruction error Minimization Problem}) \\
+  & \quad \min_{d} \sum_i \|z'_i - z'_i dd'\|_2^2, \\
+  & \quad \text{subject to } \|d\| = 1. \\
+  \\
+  & (\text{Trace로 표현한 Maximization Problem}) \\
+  & \quad \max_{d} \ \mathrm{Tr}(Z'Z), \\
+  & \quad \text{subject to } \|d\| = 1. \\
+  \end{align}
+  \]
+  ---
 
 > **참고**: 위에서 설명한 과정은 기본적인 **선형 차원축소(Encoding)** 및 **복원(Decoding)** 개념을 설명하기 위한 간단한 예시이며, 실제 **Autoencoder**나 **PCA**와 같은 알고리즘은 추가적인 제약이나 비선형성, 규제항(Regularization) 등을 고려하여 최적화를 수행합니다.
 
