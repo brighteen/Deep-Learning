@@ -1,0 +1,12 @@
+yolov8n.pt
+yolov8s.pt
+yolov8m.pt
+yolov8l.pt
+yolov8x.pt
+yolov5s.pt
+
+best.pt
+best_chick.pt
+
+datas/
+dataset/
