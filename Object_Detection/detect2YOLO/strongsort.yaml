@@ -1,0 +1,4 @@
+# strongsort.yaml 예시
+max_age: 30
+min_hits: 3
+iou_threshold: 0.3
