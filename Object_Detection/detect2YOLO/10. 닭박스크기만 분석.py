@@ -13,8 +13,8 @@ cap = cv2.VideoCapture(r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_De
 # 추적 중인 객체 정보 저장 (ID: [bbox, stillness_duration, initial_center, class_id]) # class_id 추가
 tracked_objects = {}
 object_id_counter = 0
-stillness_duration_threshold = 20  # 움직임 없음 지속 시간 (초)
-frame_rate = 30    # 초기 프레임 레이트 추정 (실제 값은 동적으로 계산)
+stillness_duration_threshold = 30  # 움직임 없음 지속 시간 (초)
+frame_rate = 120    # 초기 프레임 레이트 추정 (실제 값은 동적으로 계산)
 not_moving_frames_threshold = stillness_duration_threshold * frame_rate
 static_threshold = 20 # 움직임 없다고 판단하는 중심점 최대 이동 거리 (픽셀)
 optical_flow_threshold = 0.5 # 광학 흐름 움직임 임계값 (조정 필요)

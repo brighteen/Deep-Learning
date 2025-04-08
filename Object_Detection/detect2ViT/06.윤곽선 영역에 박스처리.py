@@ -1,6 +1,6 @@
 # 6. 윤곽선 영역에 박스처리하기(분류 무시)
 import cv2
-file_path = "Object_Detection/객체탐지 실습/datas/tile_r0_c3.mp4"
+file_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\detect2ViT\datas\tile_r0_c3.mp4"
 
 cap = cv2.VideoCapture(file_path)
 ret, prev_frame = cap.read()

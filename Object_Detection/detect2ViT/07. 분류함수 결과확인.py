@@ -34,7 +34,8 @@ def is_dead_chicken(region_img):
 
 
 # (3) 영상 읽기 및 프레임 처리
-file_path = "Object_Detection/객체탐지 실습/datas/tile_r0_c0.mp4"  # 영상 파일 경로
+file_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\detect2ViT\datas\tile_r0_c3.mp4"
+
 cap = cv2.VideoCapture(file_path)
 
 ret, prev_frame = cap.read()
