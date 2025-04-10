@@ -2,15 +2,14 @@ import cv2
 import numpy as np
 
 # 1. 파라미터 설정 및 라이브러리 초기화
-video_path = r'C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\tile_r0_c3.mp4'  # 혹은 카메라의 경우 0
-# video_path = r'C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\0_8_IPC1_20221105100432.mp4'  # 혹은 카메라의 경우 0
+video_path = r'C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\tile_r0_c1.mp4'  # 혹은 카메라의 경우 0
 cap = cv2.VideoCapture(video_path)
 if not cap.isOpened():
     print("영상 파일을 열 수 없습니다.")
     exit()
 
 # MHI를 위한 파라미터 (duration: MHI가 유지될 시간)
-duration = 1.0  # 초 단위, 이후 시간은 디케이(decay)됩니다.
+duration = 1.0  # 초 단위
 timestamp = 0.0   # 초기 시간
 dt = 0.033       # 프레임 당 시간 간격 (약 30 FPS 기준)
 
@@ -26,11 +25,6 @@ prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
 h, w = prev_gray.shape
 mhi = np.zeros((h, w), np.float32)
 
-# (선택 사항) ROI 설정: 전체 영상 대신 관심 영역만 처리하고 싶을 경우
-# roi = cv2.selectROI("Select ROI", prev_frame, False, False)
-# x, y, w_roi, h_roi = roi
-# cv2.destroyWindow("Select ROI")
-
 # 2. 프레임 반복 처리
 while True:
     ret, frame = cap.read()
@@ -40,38 +34,33 @@ while True:
     # 타임스탬프 업데이트
     timestamp += dt
 
-    # (ROI 적용 시) frame = frame[y:y+h_roi, x:x+w_roi]
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # 3. 프레임 차분을 이용한 움직임 검출
-    # 이전 프레임과의 차이 계산 및 임계값 적용
     frame_diff = cv2.absdiff(gray, prev_gray)
     _, motion_mask = cv2.threshold(frame_diff, 25, 1, cv2.THRESH_BINARY)
-    # motion_mask는 0 또는 1의 값으로 구성된 이진 영상
+    # motion_mask는 0 또는 1의 값 (이진 영상)
 
-    # 4. MHI 업데이트
-    # OpenCV의 내장 함수를 사용하는 경우:
-    # cv2.motempl.updateMotionHistory(src, dst, timestamp, duration)
+    # 4. MHI 업데이트 (OpenCV 내장 함수 이용)
     cv2.motempl.updateMotionHistory(motion_mask, mhi, timestamp, duration)
 
-    # 직접 구현하는 경우 (간단한 디케이 적용):
-    # mhi[motion_mask == 1] = timestamp
-    # mhi[(motion_mask == 0) & (mhi < (timestamp - duration))] = 0
-
-    # 5. MHI 시각화를 위해 정규화: 최근 움직임(현재 시간에 가까운 값)은 밝게 표현
-    # 계산: (mhi - (timestamp - duration)) / duration -> 0~1 범위
+    # 5. MHI 정규화: (mhi - (timestamp - duration)) / duration 범위를 0~1로 정규화 후 0~255로 스케일링
     mhi_normalized = np.uint8(np.clip((mhi - (timestamp - duration)) / duration, 0, 1) * 255)
 
-    # (선택 사항) MEI 생성: MHI를 이진화하여 전체 움직임 영역 확인
+    # 6. MEI 생성: MHI를 일정 임계값으로 이진화
     _, mei = cv2.threshold(mhi_normalized, 30, 255, cv2.THRESH_BINARY)
+    
+    # 7. MEI의 반전 이미지 생성
+    inverted_mei = cv2.bitwise_not(mei)  # 또는 inverted_mei = 255 - mei
 
-    # 6. 결과 시각화
+    # 8. 결과 시각화: 각 창에 원본 프레임, 움직임 마스크, MHI, MEI, 반전 MEI 출력
     cv2.imshow('Original Frame', frame)
-    cv2.imshow('Motion Mask', motion_mask * 255)  # 0/1 값을 0/255로 변환
+    cv2.imshow('Motion Mask', motion_mask * 255)  # 0/1 값을 0/255로 변환하여 출력
     cv2.imshow('Motion History Image (MHI)', mhi_normalized)
     cv2.imshow('Motion Energy Image (MEI)', mei)
+    cv2.imshow('Inverted MEI', inverted_mei)
 
-    # 키 입력 처리: 'q' 입력 시 종료
+    # 'q' 키를 누르면 종료
     if cv2.waitKey(30) & 0xFF == ord('q'):
         break
 
