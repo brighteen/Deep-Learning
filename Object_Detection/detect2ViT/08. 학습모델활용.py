@@ -8,7 +8,7 @@ from ultralytics.nn.tasks import DetectionModel
 
 # 안전하게 체크포인트 로드 (신뢰할 수 있는 출처라면)
 with torch.serialization.safe_globals([DetectionModel]):
-    checkpoint = torch.load("Object_Detection/객체탐지 실습/best_chick.pt",
+    checkpoint = torch.load(r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\best_chick.pt",
                               map_location=torch.device("cpu"))
     # 체크포인트에서 모델 가중치만 추출
     state_dict = checkpoint["model"].model.state_dict()
@@ -42,7 +42,7 @@ def is_dead_chicken(region_img):
     return prob[0, 1].item() > 0.5
 
 # 영상 처리 코드
-file_path = "Object_Detection/객체탐지 실습/datas/tile_r0_c3.mp4"
+file_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\detect2ViT\datas\tile_r0_c4.mp4"
 cap = cv2.VideoCapture(file_path)
 ret, prev_frame = cap.read()
 if not ret:
