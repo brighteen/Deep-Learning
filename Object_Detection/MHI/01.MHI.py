@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 
 # 1. 파라미터 설정 및 라이브러리 초기화
-video_path = r'C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\MHI\datas\tile_r0_c3.mp4'  # 혹은 카메라의 경우 0
+video_path = r'C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\tile_r0_c4.mp4'  # 혹은 카메라의 경우 0
+# video_path = r'C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\0_8_IPC1_20221105100432.mp4'  # 혹은 카메라의 경우 0
 cap = cv2.VideoCapture(video_path)
 if not cap.isOpened():
     print("영상 파일을 열 수 없습니다.")

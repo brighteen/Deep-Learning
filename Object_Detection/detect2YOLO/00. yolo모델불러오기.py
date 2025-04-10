@@ -2,10 +2,10 @@ import cv2
 from ultralytics import YOLO
 
 # 모델 로드
-model = YOLO("best_chick.pt")
+model = YOLO(r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\best_chick.pt")
 
 # 비디오 파일 열기
-cap = cv2.VideoCapture(r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\detect2YOLO\datas\tile_r0_c2.mp4")
+cap = cv2.VideoCapture(r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\tile_r0_c0.mp4")
 
 prev_frame = None
 while cap.isOpened():
