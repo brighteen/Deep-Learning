@@ -1,6 +1,6 @@
 import cv2
 
-file_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\output_video.mp4"
+file_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\MHI\datas\tile_r0_c3.mp4"
 
 cap = cv2.VideoCapture(file_path)
 

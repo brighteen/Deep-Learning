@@ -17,7 +17,7 @@ print("고윳값의 개수:", len(eigenvalues))
 print("\n고유벡터 (각 열이 하나의 고유벡터):")
 # print(eigenvectors)
 print(np.rint(eigenvectors))
-print(type(eigenvectors))
+# print(type(eigenvectors)) : ndarray
 
 print("\n고유벡터 행렬^T:\n", 
       np.rint(eigenvectors.T))
