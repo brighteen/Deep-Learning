@@ -51,7 +51,6 @@ while True:
 
     # 4. MHI 업데이트
     # OpenCV의 내장 함수를 사용하는 경우:
-    # cv2.motempl.updateMotionHistory(src, dst, timestamp, duration)
     cv2.motempl.updateMotionHistory(motion_mask, mhi, timestamp, duration)
 
     # 직접 구현하는 경우 (간단한 디케이 적용):
