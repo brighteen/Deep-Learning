@@ -12,7 +12,8 @@ dy/dx = (f(x + h) - f(x)) / h
 
 '''
 
-x0 = 3
+'''x0 = 3
+print(f'x0: {x0}')
 y = x0**2
 print(f'y: x^2: {y}') # y: 9
 
@@ -30,19 +31,29 @@ print(f'z: {z}') # z: 0.5
 dy = z * (1 - z) # sigmoid 함수의 미분
 print(f'dy: {dy}') # dy: 0.25
 
-print('---' * 20)
+print('---' * 20)'''
 
 x = 2
-np.random.seed(1) # 난수 생성기 초기화
-w = np.random.randn(1) # 0~1 사이의 난수 생성
+w = 1
 b = 0
+t = 1
+lr = 0.01
 
-y = x*w + b
-print(f'y: {y}')
+for i in range(1, 4):
+    print(f'[{i}번째] w: {w}, b: {b}') # w: 0.98, b: -0.01
+    y = x*w + b
+    loss = (y - t) ** 2
+    print(f'[{i}번째] y : {y}, loss: {loss}')
 
-dx = 1 * w # dy/dx = 1
-dw = x * 1 # dy/dw = x
-db = 1 * 1 # dy/db = 1
-print(f'dy/dx: {dx}') # dy/dx: 1
-print(f'dy/dw: {dw}') # dy/dw: 1
-print(f'dy/db: {db}') # dy/db: 1
+    dydw = x
+    dydb = 1
+
+    w = w - lr * dydw
+    b = b - lr * dydb
+
+# dx = 1 * w # dy/dx = 1
+# dw = x * 1 # dy/dw = x
+# db = 1 * 1 # dy/db = 1
+# print(f'dy/dx: {dx}') # dy/dx: 1
+# print(f'dy/dw: {dw}') # dy/dw: 1
+# print(f'dy/db: {db}') # dy/db: 1

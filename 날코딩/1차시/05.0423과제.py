@@ -32,6 +32,6 @@ b = b - lr * db
 loss = mean_squared_error(z, t)
 print(f'\n첫 loss: {loss}')
 
-for i in range(1000):
-    if i % 100 == 0:
-        print('epoch: {}, loss: {}'.format(i, loss))
+# for i in range(1000):
+#     if i % 100 == 0:
+#         print('epoch: {}, loss: {}'.format(i, loss))
