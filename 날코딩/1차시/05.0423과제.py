@@ -13,10 +13,11 @@ def mean_squared_error(y, t):
 x = 2
 w = np.random.randn(1)
 b = 0
-t = 1 # 정답
+t = 1
 lr = 0.01
 
-y = x * w + b # forward
+# forward
+y = x * w + b 
 z = sigmoid(y)
 loss = mean_squared_error(z, t)
 print(f'y, z, loss: {y}, {z}, {loss}')
