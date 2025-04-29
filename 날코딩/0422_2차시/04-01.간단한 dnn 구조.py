@@ -26,14 +26,15 @@ for i in range(1, 4):
     loss = (y - t) ** 2
     print(f'[{i}번째] y : {y}, loss: {loss}\n')
     # backward
-    dLdy = 2 * (y - t) # dL/dy = 2 * (y - t)
-    dydw = x
-    dydb = 1
+    dLdy = 2 * (y - t) # dL/dy = mse.backward()
+    dydw = x # dw = model.backward(1)[1]
+    dydb = 1 # db = model.backward(1)[2]
 
     dLdw = dLdy * dydw # dL/dw = dL/dy * dy/dw
     dLdb = dLdy * dydb # dL/db = dL/dy * dy/db
 
     # update
+    w = w - lr * 2*(y-t) * x
     w = w - lr * dLdw
     b = b - lr * dLdb
 '''
