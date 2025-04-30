@@ -2,7 +2,7 @@ import numpy as np
 np.random.seed(0)
 
 class LinearModel:
-    def init(self):
+    def __init__(self):
         self.w1 = np.random.randn(1) # w: 표준정규분포에서 랜덤하게 초기화
         self.b1 = np.zeros(1)
         self.w2 = np.random.randn(1) # w: 표준정규분포에서 랜덤하게 초기화
@@ -15,26 +15,27 @@ class LinearModel:
         self.x = x
         self.y1 = np.dot(self.w1, self.x) + self.b1 # y1 = w1*x + b1
         self.y2 = np.dot(self.w2, self.y1) + self.b2 # y2 = w2*y1 + b2
-        print(f'pred y: {self.y1}, y.shape: {self.y1.shape}')
-        print(f'pred y: {self.y2}, y.shape: {self.y2.shape}')
+        # print(f'pred y: {self.y1}, y.shape: {self.y1.shape}')
+        # print(f'pred y: {self.y2}, y.shape: {self.y2.shape}')
         return self.y1, self.y2
     
     def backward(self, dout, y1, y2): # dout :아직 모르는 loss의 미분값
-        # dout = dL_dy2
-        dy1 = dout * self.w2
-        dw2 = dout * self.y1
-        db2 = dout 
+        # dout = dL/dy2
+        dw2 = y1 * dout # w2가 움직일때 Loss의 변화량 dL/dw2 = dy2/dw2 * dL/dy2
+        db2 = 1 * dout # dL/db2 = dy2/db2 * dL/dy2
+        dy1 = self.w2 * dout # dL/dy1 = dy2/dy1 * dL/dy2
 
-        dx = dout * self.w1
-        dw1 = 
-
-        dw1 = np.dot(dy1, self.x)
-        db1 = np.dot(dy1, 1)
-
-
-        dx = np.dot(self.w1, dout) # dy_dx
-        dw = np.d
-
-        dy2dy1 = self.w2
-        dy2dw2 = y1 * dout
-        dy2db2 = dout
+        dw1 = self.x * dy1 # dL/dw1 = dy1/dw1 * dy2/dy1 * dL/dy2 = dy1/dw1 * dy1
+        db1 = 1 * dy1 # dL/db1 = dy1/db1 * dy1
+        dx = self.w1 * dy1 # dL/dx = dy1/dx * dy1, 이건 안구해도 됨(왜냐면 x는 입력값이니까 미분값을 건네줄 애가 없음)
+        return dx, dw1, db1, dy1, dw2, db2
+    
+x = 2
+dout = 1
+model = LinearModel() # 모델 선언
+y1, y2 = model.forward(x)
+print(f'\ninput: {model.x}, pred y1: {y1}, pred y2: {y2}')
+grad_x, grad_w1, grad_b1, grad_y1, grad_w2, grad_b2 = model.backward(1, y1, y2)
+print(f'\ndout: {dout}')
+print(f'\n[layer 1] \ndx: {grad_x}, dw1: {grad_w1}, db1: {grad_b1}')
+print(f'\n[layer 2] \ndy1: {grad_y1}, dw2= y1: {grad_w2}, db2: {grad_b2}')
