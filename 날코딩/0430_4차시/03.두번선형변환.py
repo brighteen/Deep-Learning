@@ -36,7 +36,7 @@ class LinearModel:
 
 print('\n---\n')
 x = 2
-dout = 1 # 
+dout = 1 # 실제 손실 함수(Loss function)의 미분값을 계산하지 않고 임의의 값을 사용
 model = LinearModel() # 모델 선언
 print('\n---\n')
 y1, y2 = model.forward(x)
