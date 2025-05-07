@@ -34,13 +34,13 @@ class MeanSquaredError:
         self.y = None
         self.t = None
         self.loss = None
-        print(f"\n[MSE] Initialize!\tpred y: {self.y}, t: {t}")
+        print(f"\n[MSE] Initialize!\tpred y: {self.y}, t: {self.t}")
 
     def forward(self, y, t):
         self.y = y
         self.t = t
         self.loss = 0.5 * (self.y - self.t)**2
-        print(f"\n[MSE] Forward\t\ty: {self.y}, t: {self.t}, loss: {loss}")
+        print(f"\n[MSE] Forward\t\ty: {self.y}, t: {self.t}, loss: {self.loss}")
         return self.loss
     
     def backward(self, dout=1):
