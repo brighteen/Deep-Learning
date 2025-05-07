@@ -34,14 +34,14 @@ class LinearModel:
         return dx, dw1, db1, dy1, dw2, db2
     
 
-print('\n---\n')
+print('---')
 x = 2
 dout = 1 # 실제 손실 함수(Loss function)의 미분값을 계산하지 않고 임의의 값을 사용
 model = LinearModel() # 모델 선언
-print('\n---\n')
+print('---')
 y1, y2 = model.forward(x)
 # print(f'\ninput: {model.x}, pred y1: {y1}, pred y2: {y2}')
-print('\n---\n')
+print('---')
 grad_x, grad_w1, grad_b1, grad_y1, grad_w2, grad_b2 = model.backward(1)
 # print(f'\ndout: {dout}')
 # print(f'\n[layer 1] \ndx: {grad_x}, dw1: {grad_w1}, db1: {grad_b1}')
