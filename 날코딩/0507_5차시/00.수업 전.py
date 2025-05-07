@@ -53,3 +53,9 @@ print(f"x * 10: \n {x*10}")
 
 y = np.array([10,20])
 print(f"x*y: \n{x*y}")
+
+print("\n반복문으로 행렬 원소 접근")
+for row in x:
+    print(f"x: {row}")
+
+print(f"flatten: {x.flatten()}, shape: {x.flatten().shape}")
