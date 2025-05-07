@@ -1,6 +1,6 @@
 import numpy as np
 
-np.random.seed(1)
+np.random.seed(0)
 
 class LinearModel: # 한번의 선형변환 구현
     def __init__(self):
@@ -57,7 +57,7 @@ model = LinearModel()
 mse = MeanSquaredError()
 
 for i in range(1):
-    print(f"\n반복 횟수 {i+1}")
+    print(f"\niteration {i+1}")
     # forward
     out = model.forward(x)
     out = mse.forward(y=out, t=t)
