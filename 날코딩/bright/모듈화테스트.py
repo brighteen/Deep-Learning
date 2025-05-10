@@ -23,7 +23,6 @@ print(f"y_1: {y1}, y_2: {y2}")
 out = mse.forward(y2=y2, t=t)
 print(f"loss: {out}")
 
-
 print("\nbackward")
 # 손실에 대한 기울기 계산
 dout = mse.backward()
