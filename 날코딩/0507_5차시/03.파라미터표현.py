@@ -4,7 +4,7 @@ params = {}
 
 params['W1'] = np.random.rand(2,2)
 # params['b1'] = np.random.rand(2,1)
-params['b1'] = np.zeros(2)
+params['b1'] = np.zeros((2,2))
 
 print(f"params: \n{params}")
 print(f"\nparams type: {type(params)}")
