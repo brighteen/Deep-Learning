@@ -31,7 +31,7 @@ criterion = nn.MSELoss()
 
 # 학습 과정
 learning_rate = 0.1
-epochs = 5
+epochs = 2
 
 print("=== 학습 시작 ===")
 for epoch in range(epochs):
