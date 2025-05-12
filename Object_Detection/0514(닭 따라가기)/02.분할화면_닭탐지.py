@@ -175,16 +175,15 @@ def play_video_with_grid(video_path, model_path, grid_size=5, scale_factor=1.0):
                 y = row * cell_height
                 cell_frame = frame[y:y+cell_height, x:x+cell_width]
                 results, chicken_count = detect_chickens(model, cell_frame, conf_threshold)
-                
-                # 탐지 결과를 프레임에 그림
-                plotted_cell = results.plot()  # YOLOv8에서는 plot() 메서드를 사용
+                  # 탐지 결과를 프레임에 그림 (레이블 크기와 선 두께 조정)
+                plotted_cell = results.plot(labels=True, font_size=0.5, line_width=1)  # 레이블 크기와 선 두께 조정
                 frame[y:y+cell_height, x:x+cell_width] = plotted_cell
             else:
                 # 전체 프레임에서 닭 탐지
                 results, chicken_count = detect_chickens(model, frame, conf_threshold)
                 
-                # 탐지 결과를 프레임에 그림
-                frame = results.plot()  # YOLOv8에서는 plot() 메서드를 사용
+                # 탐지 결과를 프레임에 그림 (레이블 크기와 선 두께 조정)
+                frame = results.plot(labels=True, font_size=0.4, line_width=1)  # 레이블 크기와 선 두께 조정
         
         # 화면 표시 준비
         if is_grid_mode:
