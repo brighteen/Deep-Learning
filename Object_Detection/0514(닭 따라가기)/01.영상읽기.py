@@ -2,6 +2,39 @@ import cv2
 import os
 import numpy as np
 import time
+from PIL import ImageFont, ImageDraw, Image
+
+def put_text_on_image(img, text, position, font_size=30, font_color=(0, 255, 0), font_thickness=2):
+    """
+    한글을 포함한 텍스트를 이미지에 그립니다.
+    
+    Args:
+        img (numpy.ndarray): 이미지 배열
+        text (str): 표시할 텍스트
+        position (tuple): 텍스트를 표시할 위치 (x, y)
+        font_size (int): 폰트 크기
+        font_color (tuple): 폰트 색상 (B, G, R)
+        font_thickness (int): 폰트 두께
+        
+    Returns:
+        numpy.ndarray: 텍스트가 추가된 이미지
+    """
+    # 이미지를 PIL 형식으로 변환
+    img_pil = Image.fromarray(img)
+    draw = ImageDraw.Draw(img_pil)
+    
+    # 폰트 로드 (Windows에서는 기본 폰트 "malgun.ttf"를 사용)
+    try:
+        font = ImageFont.truetype("malgun.ttf", font_size)  # 윈도우 기본 한글 폰트
+    except:
+        # 폰트를 찾을 수 없는 경우 기본 폰트 사용
+        font = ImageFont.load_default()
+    
+    # 텍스트 그리기
+    draw.text(position, text, font=font, fill=font_color[::-1])  # RGB -> BGR 변환을 위해 color를 뒤집음
+    
+    # PIL 이미지를 NumPy 배열로 변환하여 반환
+    return np.array(img_pil)
 
 def play_video(video_path, scale_factor=1.0, crop_region=None):
     """
@@ -15,6 +48,7 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
     조작 방법:
         - 'q' 키: 종료
         - 'c' 키: 전체/부분 전환
+        - 's' 키: 영역 선택 모드 활성화 (마우스로 드래그하여 원하는 영역 선택)
         - '+/-' 키: 확대/축소
         - 스페이스바: 재생/일시정지
         - 'a'/'d' 키: 뒤로/앞으로 5초
@@ -50,7 +84,8 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
     print(f"영상 재생 중... (FPS: {fps:.2f})")
     print("조작 방법:")
     print("- 'q' 키: 종료")
-    print("- 'c' 키: 전체/부분 전환")
+    print("- 'c' 키: 전체/부분 전환 (기본 중앙 영역)")
+    print("- 's' 키: 영역 선택 모드 활성화 (마우스로 드래그)")
     print("- '+/-' 키: 확대/축소")
     print("- 스페이스바: 재생/일시정지")
     print("- 'a'/'d' 키: 뒤로/앞으로 5초")
@@ -61,7 +96,13 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
         'is_dragging': False,
         'drag_start_x': 0,
         'drag_start_y': 0,
-        'crop_region': crop_region
+        'crop_region': crop_region,
+        'selection_mode': False,     # 영역 선택 모드
+        'selection_start_x': 0,      # 선택 영역의 시작점 x
+        'selection_start_y': 0,      # 선택 영역의 시작점 y
+        'selection_end_x': 0,        # 선택 영역의 끝점 x
+        'selection_end_y': 0,        # 선택 영역의 끝점 y
+        'selecting': False           # 선택 중인지 여부
     }
     
     # 전체 프레임 표시 모드인지 여부 (True면 전체, False면 자른 영역)
@@ -73,33 +114,93 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
     
     # 마우스 콜백 함수
     def mouse_callback(event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:  # 마우스 왼쪽 버튼 누름
-            mouse_data['is_dragging'] = True
-            mouse_data['drag_start_x'] = x
-            mouse_data['drag_start_y'] = y
-            
-        elif event == cv2.EVENT_MOUSEMOVE:  # 마우스 이동
-            if mouse_data['is_dragging'] and not show_full_frame:
-                # 드래그 중이고 부분 영역 모드일 때만 이동
-                dx = mouse_data['drag_start_x'] - x
-                dy = mouse_data['drag_start_y'] - y
+        nonlocal scale_factor, show_full_frame
+        
+        if mouse_data['selection_mode']:
+            # 영역 선택 모드일 때
+            if event == cv2.EVENT_LBUTTONDOWN:
+                mouse_data['selecting'] = True
+                mouse_data['selection_start_x'] = x
+                mouse_data['selection_start_y'] = y
+                mouse_data['selection_end_x'] = x
+                mouse_data['selection_end_y'] = y
                 
-                # 원본 좌표
-                orig_x, orig_y, w, h = mouse_data['crop_region']
+            elif event == cv2.EVENT_MOUSEMOVE and mouse_data['selecting']:
+                mouse_data['selection_end_x'] = x
+                mouse_data['selection_end_y'] = y
                 
-                # 새 좌표 계산 (경계 체크)
-                new_x = min(max(0, orig_x + int(dx/scale_factor)), width - w)
-                new_y = min(max(0, orig_y + int(dy/scale_factor)), height - h)
+            elif event == cv2.EVENT_LBUTTONUP:
+                mouse_data['selecting'] = False
                 
-                # 업데이트된 좌표
-                mouse_data['crop_region'] = (new_x, new_y, w, h)
+                # 선택 영역 계산
+                start_x = min(mouse_data['selection_start_x'], mouse_data['selection_end_x'])
+                start_y = min(mouse_data['selection_start_y'], mouse_data['selection_end_y'])
+                end_x = max(mouse_data['selection_start_x'], mouse_data['selection_end_x'])
+                end_y = max(mouse_data['selection_start_y'], mouse_data['selection_end_y'])
                 
-                # 드래그 시작점 업데이트
+                select_width = end_x - start_x
+                select_height = end_y - start_y
+                
+                # 영역 크기가 충분히 큰지 확인
+                if select_width > 10 and select_height > 10:
+                    # 현재 화면 크기에서 원본 비디오 크기로 좌표 변환
+                    if show_full_frame:
+                        # 전체화면 모드에서 선택한 경우
+                        orig_x = int(start_x / scale_factor)
+                        orig_y = int(start_y / scale_factor)
+                        orig_width = int(select_width / scale_factor)
+                        orig_height = int(select_height / scale_factor)
+                    else:
+                        # 이미 자른 영역 내에서 선택한 경우
+                        curr_x, curr_y, _, _ = mouse_data['crop_region']
+                        orig_x = curr_x + int(start_x / scale_factor)
+                        orig_y = curr_y + int(start_y / scale_factor)
+                        orig_width = int(select_width / scale_factor)
+                        orig_height = int(select_height / scale_factor)
+                    
+                    # 선택 영역이 비디오 프레임 내에 있도록 제한
+                    orig_x = min(max(0, orig_x), width)
+                    orig_y = min(max(0, orig_y), height)
+                    orig_width = min(orig_width, width - orig_x)
+                    orig_height = min(orig_height, height - orig_y)
+                    
+                    # 유효한 영역 설정
+                    mouse_data['crop_region'] = (orig_x, orig_y, orig_width, orig_height)
+                    show_full_frame = False
+                    mouse_data['selection_mode'] = False
+                    print(f"선택한 영역으로 변경: {mouse_data['crop_region']}")
+                else:
+                    mouse_data['selection_mode'] = False
+                    print("영역이 너무 작습니다. 다시 시도하세요.")
+        else:
+            # 일반 드래그 모드 (화면 이동)
+            if event == cv2.EVENT_LBUTTONDOWN:
+                mouse_data['is_dragging'] = True
                 mouse_data['drag_start_x'] = x
                 mouse_data['drag_start_y'] = y
                 
-        elif event == cv2.EVENT_LBUTTONUP:  # 마우스 왼쪽 버튼 뗌
-            mouse_data['is_dragging'] = False
+            elif event == cv2.EVENT_MOUSEMOVE:
+                if mouse_data['is_dragging'] and not show_full_frame:
+                    # 드래그 중이고 부분 영역 모드일 때만 이동
+                    dx = mouse_data['drag_start_x'] - x
+                    dy = mouse_data['drag_start_y'] - y
+                    
+                    # 원본 좌표
+                    orig_x, orig_y, w, h = mouse_data['crop_region']
+                    
+                    # 새 좌표 계산 (경계 체크)
+                    new_x = min(max(0, orig_x + int(dx/scale_factor)), width - w)
+                    new_y = min(max(0, orig_y + int(dy/scale_factor)), height - h)
+                    
+                    # 업데이트된 좌표
+                    mouse_data['crop_region'] = (new_x, new_y, w, h)
+                    
+                    # 드래그 시작점 업데이트
+                    mouse_data['drag_start_x'] = x
+                    mouse_data['drag_start_y'] = y
+                    
+            elif event == cv2.EVENT_LBUTTONUP:
+                mouse_data['is_dragging'] = False
     
     # 마우스 콜백 등록
     cv2.namedWindow('Video')
@@ -160,29 +261,36 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
         # 프레임에 정보 표시
         time_pos = curr_frame_pos / fps  # 현재 시간 위치(초)
         total_time = total_frames / fps   # 총 시간(초)
-        
-        # 상태 정보 표시
-        cv2.putText(display_frame, f"Scale: {scale_factor:.2f}", 
-                    (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(display_frame, f"Time: {time_pos:.1f}s / {total_time:.1f}s", 
-                    (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(display_frame, f"{'일시정지' if is_paused else '재생 중'}", 
-                    (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+          # 상태 정보 표시 (한글 지원)
+        display_frame = put_text_on_image(display_frame, f"배율: {scale_factor:.2f}", (10, 30), 25, (0, 255, 0))
+        display_frame = put_text_on_image(display_frame, f"시간: {time_pos:.1f}초 / {total_time:.1f}초", (10, 60), 25, (0, 255, 0))
+        display_frame = put_text_on_image(display_frame, f"{'일시정지' if is_paused else '재생 중'}", (10, 90), 25, (0, 255, 0))
         
         # 부분 영역을 보고 있는 경우 표시
         if not show_full_frame:
-            cv2.putText(display_frame, f"Region: ({crop_region[0]}, {crop_region[1]}, {crop_region[2]}, {crop_region[3]})", 
-                        (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-          # 프레임 표시
+            display_frame = put_text_on_image(display_frame, f"영역: ({crop_region[0]}, {crop_region[1]}, {crop_region[2]}, {crop_region[3]})", 
+                        (10, 120), 25, (0, 255, 0))
+        
+        # 선택 모드 상태 표시
+        if mouse_data['selection_mode']:
+            display_frame = put_text_on_image(display_frame, "영역 선택 모드: 마우스로 드래그하세요", 
+                        (10, 150), 25, (0, 0, 255))
+            
+            # 선택 중인 경우 사각형 표시
+            if mouse_data['selecting']:
+                start_x = min(mouse_data['selection_start_x'], mouse_data['selection_end_x'])
+                start_y = min(mouse_data['selection_start_y'], mouse_data['selection_end_y'])
+                end_x = max(mouse_data['selection_start_x'], mouse_data['selection_end_x'])
+                end_y = max(mouse_data['selection_start_y'], mouse_data['selection_end_y'])
+                
+                cv2.rectangle(display_frame, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
+            
+        # 프레임 표시
         cv2.imshow('Video', display_frame)
         
         # 키 입력 대기 (일시정지 상태일 때는 더 빠르게 반응하도록)
         wait_time = 1 if is_paused else delay
         key = cv2.waitKey(wait_time) & 0xFF
-        
-        # 키 입력 디버깅 (필요시 주석 해제)
-        # if key != 255:  # 키 입력이 있으면 콘솔에 출력
-        #     print(f"키 코드: {key}")
         
         # 키 입력에 따른 동작
         if key == ord('q'):  # 'q' 키: 종료
@@ -190,7 +298,8 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
             break
             
         elif key == ord('c'):  # 'c' 키: 전체/부분 전환
-            if show_full_frame:                # 중앙 부분을 확대하여 보여주기
+            if show_full_frame:
+                # 중앙 부분을 확대하여 보여주기
                 center_x = width // 2
                 center_y = height // 2
                 crop_size = min(width, height) // 3
@@ -204,6 +313,13 @@ def play_video(video_path, scale_factor=1.0, crop_region=None):
                 mouse_data['crop_region'] = new_crop_region
                 show_full_frame = True
                 print("전체 프레임 보기로 전환")
+        
+        elif key == ord('s'):  # 's' 키: 영역 선택 모드 활성화/비활성화
+            mouse_data['selection_mode'] = not mouse_data['selection_mode']
+            if mouse_data['selection_mode']:
+                print("영역 선택 모드 활성화: 마우스로 드래그하여 영역을 선택하세요.")
+            else:
+                print("영역 선택 모드 비활성화")
                 
         elif key == ord('+') or key == ord('='):  # '+' 키: 확대
             scale_factor += 0.1
