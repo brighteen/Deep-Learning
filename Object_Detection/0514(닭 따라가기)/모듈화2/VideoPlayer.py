@@ -121,6 +121,73 @@ class VideoPlayer:
             ret, frame = self.cap.read()
             
         return ret, frame
+
+    def _get_id_set_for_detection(self, results, i, original_id):
+        """
+        ID가 속한 집합을 가져옵니다.
+        
+        Args:
+            results: 탐지 결과
+            i: 현재 객체 인덱스
+            original_id: 원래 ID
+            
+        Returns:
+            ID가 속한 집합
+        """
+        id_set = set()
+        
+        # 결과에서 직접 ID 세트 가져오기 (이미 계산된 세트 사용)
+        if hasattr(results, 'id_sets') and i < len(results.id_sets):
+            id_set = results.id_sets[i]
+        # 백업: detector에서 직접 가져오기
+        elif hasattr(self.detector, 'id_to_set_index') and original_id in self.detector.id_to_set_index:
+            set_index = self.detector.id_to_set_index[original_id]
+            if set_index < len(self.detector.chicken_id_sets):
+                id_set = self.detector.chicken_id_sets[set_index]
+                
+        return id_set
+    
+    def _draw_id_text_with_background(self, frame, text, x1, y1, font_scale=0.7, color=(0, 255, 255)):
+        """
+        ID 텍스트를 배경과 함께 그립니다.
+        
+        Args:
+            frame: 그릴 프레임
+            text: 표시할 텍스트
+            x1, y1: 박스 좌표
+            font_scale: 폰트 크기
+            color: 텍스트 색상
+            
+        Returns:
+            그려진 프레임
+        """
+        thickness = 2
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, thickness)
+        
+        # 텍스트 위치 계산 (상단에 표시)
+        text_bg_top = max(0, int(y1) - text_height - 12)
+        
+        # 더 명확한 배경 - 반투명 검은색 배경에 테두리 추가
+        overlay = frame.copy()
+        cv2.rectangle(overlay, 
+                    (int(x1) - 2, text_bg_top - 2), 
+                    (int(x1) + text_width + 4, text_bg_top + text_height + 10), 
+                    (0, 0, 0), -1)
+        cv2.rectangle(overlay, 
+                    (int(x1) - 2, text_bg_top - 2), 
+                    (int(x1) + text_width + 4, text_bg_top + text_height + 10), 
+                    (255, 255, 0), 1)  # 노란색 테두리
+        
+        # 이미지에 오버레이 적용 (80% 불투명도)
+        cv2.addWeighted(overlay, 0.8, frame, 0.2, 0, frame)
+        
+        # 텍스트 그리기 - 더 밝은 색상으로
+        cv2.putText(frame, text, (int(x1), int(y1) - 7),
+                font, font_scale, color, thickness)
+        
+        return frame
+
     def detect_chickens(self, frame):
         """
         프레임에서 닭을 탐지합니다.
@@ -176,41 +243,20 @@ class VideoPlayer:
                                 consistent_id = results.display_ids[i]
                                 
                                 # ID가 속한 집합 가져오기
-                                id_set = set()
-                                if hasattr(self.detector, 'id_to_set_index') and original_id in self.detector.id_to_set_index:
-                                    set_index = self.detector.id_to_set_index[original_id]
-                                    if set_index < len(self.detector.chicken_id_sets):
-                                        id_set = self.detector.chicken_id_sets[set_index]
-                                  # ID 집합이 있으면 집합 형식으로 표시
+                                id_set = self._get_id_set_for_detection(results, i, original_id)
                                 if id_set:
-                                    id_set_str = "{" + ", ".join(map(str, id_set)) + "}"
-                                    # 텍스트 크기 계산
+                                    # 간결한 ID 세트 표시 형식으로 수정
+                                    id_set_str = "{" + ", ".join(map(str, sorted(id_set))) + "}"
                                     text = f"ID:{consistent_id} {id_set_str}"
-                                    font_scale = 0.6
-                                    thickness = 2
-                                    font = cv2.FONT_HERSHEY_SIMPLEX
-                                    (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, thickness)
-                                    
-                                    # 텍스트 배경 그리기 (가독성 향상)
-                                    text_bg_top = max(0, int(y1) - text_height - 10)
-                                    cv2.rectangle(plotted_cell, (int(x1), text_bg_top), 
-                                                (int(x1) + text_width, text_bg_top + text_height + 10), (0, 0, 0), -1)
-                                    
-                                    # 텍스트 그리기
-                                    cv2.putText(plotted_cell, text, (int(x1), int(y1) - 5),
-                                            font, font_scale, (0, 255, 255), thickness)
+                                    plotted_cell = self._draw_id_text_with_background(plotted_cell, text, x1, y1)
                                 elif original_id != consistent_id:
                                     # 매핑 정보만 있는 경우
                                     text = f"ID:{original_id}->{consistent_id}"
-                                    font_scale = 0.6
-                                    cv2.putText(plotted_cell, text, (int(x1), int(y1) - 5),
-                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                                    plotted_cell = self._draw_id_text_with_background(plotted_cell, text, x1, y1, font_scale=0.6, color=(0, 0, 255))
                                 else:
                                     # 변경이 없는 경우 일관된 ID만 표시
                                     text = f"ID:{consistent_id}"
-                                    font_scale = 0.6
-                                    cv2.putText(plotted_cell, text, (int(x1), int(y1) - 5),
-                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                                    plotted_cell = self._draw_id_text_with_background(plotted_cell, text, x1, y1, font_scale=0.6, color=(0, 0, 255))
                     
                     frame[y:y+cell_height, x:x+cell_width] = plotted_cell
             else:
@@ -241,41 +287,20 @@ class VideoPlayer:
                                 consistent_id = results.display_ids[i]
                                 
                                 # ID가 속한 집합 가져오기
-                                id_set = set()
-                                if hasattr(self.detector, 'id_to_set_index') and original_id in self.detector.id_to_set_index:
-                                    set_index = self.detector.id_to_set_index[original_id]
-                                    if set_index < len(self.detector.chicken_id_sets):
-                                        id_set = self.detector.chicken_id_sets[set_index]
-                                  # ID 집합이 있으면 집합 형식으로 표시
+                                id_set = self._get_id_set_for_detection(results, i, original_id)
                                 if id_set:
-                                    id_set_str = "{" + ", ".join(map(str, id_set)) + "}"
-                                    # 텍스트 크기 계산
+                                    # 간결한 ID 세트 표시 형식으로 수정
+                                    id_set_str = "{" + ", ".join(map(str, sorted(id_set))) + "}"
                                     text = f"ID:{consistent_id} {id_set_str}"
-                                    font_scale = 0.6
-                                    thickness = 2
-                                    font = cv2.FONT_HERSHEY_SIMPLEX
-                                    (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, thickness)
-                                    
-                                    # 텍스트 배경 그리기 (가독성 향상)
-                                    text_bg_top = max(0, int(y1) - text_height - 10)
-                                    cv2.rectangle(frame, (int(x1), text_bg_top), 
-                                                (int(x1) + text_width, text_bg_top + text_height + 10), (0, 0, 0), -1)
-                                    
-                                    # 텍스트 그리기
-                                    cv2.putText(frame, text, (int(x1), int(y1) - 5),
-                                            font, font_scale, (0, 255, 255), thickness)
+                                    frame = self._draw_id_text_with_background(frame, text, x1, y1)
                                 elif original_id != consistent_id:
                                     # 매핑 정보만 있는 경우
                                     text = f"ID:{original_id}->{consistent_id}"
-                                    font_scale = 0.6
-                                    cv2.putText(frame, text, (int(x1), int(y1) - 5),
-                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                                    frame = self._draw_id_text_with_background(frame, text, x1, y1, font_scale=0.6, color=(0, 0, 255))
                                 else:
                                     # 변경이 없는 경우 일관된 ID만 표시
                                     text = f"ID:{consistent_id}"
-                                    font_scale = 0.6
-                                    cv2.putText(frame, text, (int(x1), int(y1) - 5),
-                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                                    frame = self._draw_id_text_with_background(frame, text, x1, y1, font_scale=0.6, color=(0, 0, 255))
         
         return frame, chicken_count
     
@@ -349,50 +374,52 @@ class VideoPlayer:
             self.is_grid_mode = True  # 선택된 셀이 없으면 그리드 모드로 전환
         
         return display_frame
-        
     def _add_status_info(self, frame, chicken_count):
         """프레임에 상태 정보를 추가합니다."""
         time_pos = self.curr_frame_pos / self.fps  # 현재 시간 위치(초)
         total_time = self.total_frames / self.fps   # 총 시간(초)
         
-        # 상태 정보 표시 (한글 지원)
-        frame = self.text_renderer.put_text(frame, f"배율: {self.scale_factor:.2f}", (10, 30), 25, (0, 255, 0))
-        frame = self.text_renderer.put_text(frame, f"시간: {time_pos:.1f}초 / {total_time:.1f}초", (10, 60), 25, (0, 255, 0))
-        frame = self.text_renderer.put_text(frame, f"{'일시정지' if self.is_paused else '재생 중'}", (10, 90), 25, (0, 255, 0))
-        frame = self.text_renderer.put_text(frame, f"모드: {'그리드' if self.is_grid_mode else '확대'}", (10, 120), 25, (0, 255, 0))
+        # 상태 정보 표시 (한글 지원) - 배경 추가로 가독성 향상
+        frame = self.text_renderer.put_text(frame, f"배율: {self.scale_factor:.2f}", 
+                (10, 30), 25, (0, 255, 0), with_background=True)
+        frame = self.text_renderer.put_text(frame, f"시간: {time_pos:.1f}초 / {total_time:.1f}초", 
+                (10, 60), 25, (0, 255, 0), with_background=True)
+        frame = self.text_renderer.put_text(frame, f"{'일시정지' if self.is_paused else '재생 중'}", 
+                (10, 90), 25, (0, 255, 0), with_background=True)
+        frame = self.text_renderer.put_text(frame, f"모드: {'그리드' if self.is_grid_mode else '확대'}", 
+                (10, 120), 25, (0, 255, 0), with_background=True)
         
         # 선택된 셀 정보 표시
         if not self.is_grid_mode and self.selected_cell is not None:
             frame = self.text_renderer.put_text(frame, f"선택 셀: ({self.selected_cell[0]}, {self.selected_cell[1]})", 
-                    (10, 150), 25, (0, 255, 0))
+                    (10, 150), 25, (0, 255, 0), with_background=True)
         
         # YOLO 탐지 정보 표시
         if self.detector.enabled:
             color = (0, 255, 255) if self.yolo_detection_active else (0, 0, 255)
             frame = self.text_renderer.put_text(frame, 
                     f"YOLO: {'켜짐' if self.yolo_detection_active else '꺼짐'} (임계값: {self.conf_threshold:.2f})", 
-                    (10, 180), 25, color)
+                    (10, 180), 25, color, with_background=True)
             
             if self.yolo_detection_active:
                 frame = self.text_renderer.put_text(frame, f"탐지된 닭: {chicken_count}마리", 
-                        (10, 210), 25, (0, 255, 255))
+                        (10, 210), 25, (0, 255, 255), with_background=True)
                 frame = self.text_renderer.put_text(frame, f"탐지 간격: {self.detection_interval}프레임마다", 
-                        (10, 240), 25, (0, 255, 255))
+                        (10, 240), 25, (0, 255, 255), with_background=True)
                   # 추적 상태 표시
                 tracking_color = (0, 255, 255) if hasattr(self.detector, 'tracking_enabled') and self.detector.tracking_enabled else (0, 0, 255)
                 frame = self.text_renderer.put_text(frame, 
                         f"객체 추적: {'켜짐' if hasattr(self.detector, 'tracking_enabled') and self.detector.tracking_enabled else '꺼짐'}", 
-                        (10, 270), 25, tracking_color)
+                        (10, 270), 25, tracking_color, with_background=True)
                 
                 # 일관된 ID 추적 상태 표시
                 if hasattr(self.detector, 'tracking_enabled') and self.detector.tracking_enabled:
                     consistent_id_color = (0, 255, 255) if hasattr(self.detector, 'use_consistent_ids') and self.detector.use_consistent_ids else (0, 0, 255)
                     frame = self.text_renderer.put_text(frame, 
                             f"일관된 ID: {'켜짐' if hasattr(self.detector, 'use_consistent_ids') and self.detector.use_consistent_ids else '꺼짐'}", 
-                            (10, 300), 25, consistent_id_color)
+                            (10, 300), 25, consistent_id_color, with_background=True)
         
         return frame    
-    
     def _visualize_id_sets(self, frame, x_offset=10, y_offset=330):
         """
         객체 ID 집합을 화면에 시각화합니다.
@@ -405,44 +432,19 @@ class VideoPlayer:
         Returns:
             시각화가 추가된 프레임
         """
+        # 이제 ID 집합 정보는 각 객체 위에 직접 표시되므로 이 함수는 간단한 상태 정보만 표시
         if not hasattr(self.detector, 'use_consistent_ids') or not self.detector.use_consistent_ids:
             return frame
             
-        # ID 집합 정보가 있는 경우
+        # ID 집합 정보가 있는 경우, 현재 활성 ID 세트 개수만 표시
         if hasattr(self.detector, 'chicken_id_sets') and len(self.detector.chicken_id_sets) > 0:
-            # 제목 표시
-            frame = self.text_renderer.put_text(frame, "ID 집합:", (x_offset, y_offset), 25, (255, 255, 0))
-            y_offset += 30
+            # 빈 집합 제외한 세트 개수 계산
+            active_sets = sum(1 for s in self.detector.chicken_id_sets if s)
             
-            # 각 ID 집합을 표시 (최대 5개까지만)
-            displayed_sets = 0
-            for i, id_set in enumerate(self.detector.chicken_id_sets):
-                if i >= 5:  # 최대 5개 집합만 표시
-                    break
-                
-                if not id_set:
-                    continue
-                    
-                # 대표 ID 가져오기
-                display_id = self.detector.set_to_display_id.get(i, min(id_set))
-                
-                # ID 집합을 문자열로 변환
-                id_str = f"Set {i+1} [대표 ID: {display_id}]: " + ", ".join([str(id) for id in id_set])
-                
-                # 텍스트가 너무 길면 자르기
-                if len(id_str) > 40:
-                    id_str = id_str[:37] + "..."
-                
-                # 텍스트 표시
-                frame = self.text_renderer.put_text(frame, id_str, 
-                        (x_offset, y_offset + displayed_sets * 25), 20, (255, 255, 0))
-                displayed_sets += 1
-            
-            # 더 많은 집합이 있을 경우 표시
-            if len(self.detector.chicken_id_sets) > 5:
-                frame = self.text_renderer.put_text(frame, 
-                        f"... 외 {len(self.detector.chicken_id_sets) - 5}개의 집합이 더 있습니다.",
-                        (x_offset, y_offset + displayed_sets * 25), 20, (255, 255, 0))
+            # 활성 ID 세트 개수 표시
+            msg = f"활성 ID 세트: {active_sets}개"
+            frame = self.text_renderer.put_text(frame, msg, 
+                    (x_offset, y_offset), 25, (255, 255, 0), with_background=True)
         
         return frame
 

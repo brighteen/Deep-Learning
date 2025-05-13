@@ -23,15 +23,14 @@ class ChickenDetector:
             self.id_to_set_index = {}   # ID가 어느 집합에 속하는지 매핑
             self.id_to_position = {}    # ID별 위치 정보
             self.id_to_last_frame = {}  # ID별 마지막 등장 프레임
-            self.id_to_last_time = {}   # ID별 마지막 등장 시간
-            self.set_to_display_id = {} # 각 집합의 대표 ID
+            self.id_to_last_time = {}   # ID별 마지막 등장 시간            self.set_to_display_id = {} # 각 집합의 대표 ID
             
             self.frame_count = 0        # 현재 프레임 번호
             self.use_consistent_ids = False # 일관된 ID 사용 여부
             
             # 객체 추적 설정
-            self.distance_threshold = 50  # 같은 객체로 판단할 최대 거리
-            self.time_threshold = 2.0     # 같은 객체로 판단할 최대 시간 차이 (초)
+            self.distance_threshold = 25  # 같은 객체로 판단할 최대 거리 (줄임: 50->25)
+            self.time_threshold = 1.5     # 같은 객체로 판단할 최대 시간 차이 (초) (줄임: 2.0->1.5)
             self.max_frames = 100         # 오래된 데이터 삭제 기준 프레임 수
         except Exception as e:
             print(f"YOLO 모델 로드 실패: {e}")
@@ -120,8 +119,9 @@ class ChickenDetector:
                 self.set_to_display_id = {}
             
             return True
-        return False
-        
+          
+          
+          
     def _update_id_mapping(self, boxes, current_time):
         """
         탐지된 객체들의 ID 매핑을 업데이트합니다.
@@ -144,7 +144,12 @@ class ChickenDetector:
             center_y = (box[1] + box[3]) / 2.0
             centers.append((center_x, center_y))
         
-        # 새롭게 등장한 ID 처리
+        # 현재 프레임에서 매칭을 추적하기 위한 변수
+        already_matched_old_ids = set()
+        already_matched_new_ids = set()
+        
+        # 각 새로운 ID와 기존 ID 사이의 거리를 계산하여 가장 가까운 것부터 매칭
+        potential_matches = []
         for i, chicken_id in enumerate(current_ids):
             chicken_id = int(chicken_id)
             center = centers[i]
@@ -154,48 +159,71 @@ class ChickenDetector:
                 self.id_to_position[chicken_id] = center
                 self.id_to_last_frame[chicken_id] = self.frame_count
                 self.id_to_last_time[chicken_id] = current_time
+                already_matched_new_ids.add(chicken_id)
                 continue
                 
-            # 새로운 ID가 나타난 경우
-            matched = False
-            
-            # 기존 객체 중 근처에 있었던 것이 있는지 확인
+            # 새로운 ID가 나타난 경우, 모든 기존 ID와의 거리를 계산
             for old_id, old_pos in self.id_to_position.items():
+                # 이미 매칭된 기존 ID는 건너뜀
+                if old_id in already_matched_old_ids:
+                    continue
+                    
                 # 거리 계산
                 distance = np.sqrt((center[0] - old_pos[0])**2 + (center[1] - old_pos[1])**2)
                 time_diff = current_time - self.id_to_last_time.get(old_id, 0)
                 
-                # 거리와 시간 모두 임계값 이내인 경우
+                # 거리와 시간 조건 확인
                 if distance < self.distance_threshold and time_diff < self.time_threshold:
-                    # 같은 객체로 매칭
-                    matched = True
-                    
-                    # 기존 ID가 속한 집합을 확인
-                    if old_id in self.id_to_set_index:
-                        set_index = self.id_to_set_index[old_id]
-                        self.chicken_id_sets[set_index].add(chicken_id)
-                        self.id_to_set_index[chicken_id] = set_index
-                    else:
-                        # 기존 ID가 집합에 없는 경우 - 새로운 집합 생성
-                        self.chicken_id_sets.append({old_id, chicken_id})
-                        set_index = len(self.chicken_id_sets) - 1
-                        self.id_to_set_index[old_id] = set_index
-                        self.id_to_set_index[chicken_id] = set_index
-                        self.set_to_display_id[set_index] = min(chicken_id, old_id)  # 작은 ID를 대표로
-                    break
-                    
-            # 매칭되지 않은 경우 새로운 객체로 등록
-            if not matched:
-                self.chicken_id_sets.append({chicken_id})
-                set_index = len(self.chicken_id_sets) - 1
+                    potential_matches.append((distance, i, chicken_id, old_id))
+        
+        # 거리가 가까운 순서로 매칭
+        potential_matches.sort()
+        for distance, i, chicken_id, old_id in potential_matches:
+            # 이미 매칭된 ID는 건너뜀
+            if old_id in already_matched_old_ids or chicken_id in already_matched_new_ids:
+                continue
+                
+            # 매칭 성공
+            already_matched_old_ids.add(old_id)
+            already_matched_new_ids.add(chicken_id)
+            center = centers[i]
+            
+            # 기존 ID가 속한 집합을 확인
+            if old_id in self.id_to_set_index:
+                set_index = self.id_to_set_index[old_id]
+                self.chicken_id_sets[set_index].add(chicken_id)
                 self.id_to_set_index[chicken_id] = set_index
-                self.set_to_display_id[set_index] = chicken_id
+            else:
+                # 기존 ID가 집합에 없는 경우 - 새로운 집합 생성
+                self.chicken_id_sets.append({old_id, chicken_id})
+                set_index = len(self.chicken_id_sets) - 1
+                self.id_to_set_index[old_id] = set_index
+                self.id_to_set_index[chicken_id] = set_index
+                self.set_to_display_id[set_index] = min(chicken_id, old_id)  # 작은 ID를 대표로
                 
             # 위치 및 시간 정보 업데이트
             self.id_to_position[chicken_id] = center
             self.id_to_last_frame[chicken_id] = self.frame_count
             self.id_to_last_time[chicken_id] = current_time
+        
+        # 매칭되지 않은 새 ID들을 각각 새로운 객체로 등록
+        for i, chicken_id in enumerate(current_ids):
+            chicken_id = int(chicken_id)
+            if chicken_id in already_matched_new_ids:
+                continue
+                
+            # 매칭되지 않은 새로운 ID 등록
+            center = centers[i]
+            self.chicken_id_sets.append({chicken_id})
+            set_index = len(self.chicken_id_sets) - 1
+            self.id_to_set_index[chicken_id] = set_index
+            self.set_to_display_id[set_index] = chicken_id
             
+            # 위치 및 시간 정보 업데이트
+            self.id_to_position[chicken_id] = center
+            self.id_to_last_frame[chicken_id] = self.frame_count
+            self.id_to_last_time[chicken_id] = current_time
+              
     def _modify_results_with_mapped_ids(self, results):
         """
         탐지 결과의 ID를 매핑된 정보를 사용하여 수정합니다.
@@ -206,6 +234,7 @@ class ChickenDetector:
         # 원본 ID 배열은 수정할 수 없으므로, 대신 렌더링 시 표시할 ID 정보를 저장
         current_ids = results.boxes.id.cpu().numpy()
         display_ids = []
+        id_sets = []  # 각 객체가 속한 ID 집합
         
         for i, chicken_id in enumerate(current_ids):
             chicken_id = int(chicken_id)
@@ -214,11 +243,15 @@ class ChickenDetector:
                 set_index = self.id_to_set_index[chicken_id]
                 display_id = self.set_to_display_id.get(set_index, chicken_id)
                 display_ids.append(display_id)
+                # ID 집합 정보도 같이 저장
+                id_sets.append(self.chicken_id_sets[set_index])
             else:
                 display_ids.append(chicken_id)
+                id_sets.append({chicken_id})
         
-        # 표시 ID 정보를 결과 객체에 저장
+        # 표시 ID 정보 및 ID 집합 정보를 결과 객체에 저장
         results.display_ids = display_ids
+        results.id_sets = id_sets
             
         return results
         
