@@ -369,8 +369,8 @@ if __name__ == "__main__":
                         help="YOLO 모델 경로")
     parser.add_argument("--grid_size", type=int, default=5, help="그리드 크기 (NxN)")
     parser.add_argument("--scale", type=float, default=0.7, help="영상 크기 조절 비율")
-    parser.add_argument("--max_time", type=int, default=30, help="최대 재생 시간(초)")
-    parser.add_argument("--frame_skip", type=int, default=10, help="프레임 건너뛰기 (높을수록 빠름)")
+    parser.add_argument("--max_time", type=int, default=60, help="최대 재생 시간(초)")
+    parser.add_argument("--frame_skip", type=int, default=30, help="프레임 건너뛰기 (높을수록 빠름)")
     parser.add_argument("--cell", default="2,1", help="추적할 그리드 셀 좌표 (row,col)")
     
     # 인자 파싱

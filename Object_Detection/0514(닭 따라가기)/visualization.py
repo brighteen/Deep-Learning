@@ -23,7 +23,7 @@ def add_status_info(display_frame, info):
         display_frame = put_text_on_image(
             display_frame,
             text,
-            (10, y_offset + i * 30),
+            (10, y_offset + i * 35),  # 간격을 30에서 35로 늘려 겹침 방지
             25,
             info.get(f"{key}_color", (0, 255, 0))
         )
@@ -49,13 +49,13 @@ def add_tracking_info(display_frame, tracker):
     # 추적 정보 표시
     display_frame = put_text_on_image(display_frame, 
                 f"ID 집합: {stats['id_sets']}개", 
-                (10, 240), 25, (0, 255, 255))
+                (10, 250), 25, (0, 255, 255))  # Y 좌표 240 -> 250
     display_frame = put_text_on_image(display_frame, 
                 f"총 고유 ID: {stats['total_unique_ids']}개", 
-                (10, 270), 25, (0, 255, 255))
+                (10, 285), 25, (0, 255, 255))  # Y 좌표 270 -> 285
     display_frame = put_text_on_image(display_frame, 
                 f"재등장 이벤트: {stats['reappearance_events']}회", 
-                (10, 300), 25, (0, 255, 255))
+                (10, 320), 25, (0, 255, 255))  # Y 좌표 300 -> 320
     
     return display_frame
 
@@ -83,7 +83,7 @@ def show_skipped_frame_info(frame, cell_coords, tracker, current_time):
             display_time_skipped = put_text_on_image(
                 frame[y:y+cell_height, x:x+cell_width].copy(),
                 f"마지막 탐지: {tracker.last_time:.1f}초", 
-                (10, 30), 20, (0, 0, 255))
+                (10, 60), 20, (0, 0, 255))  # Y 좌표 30 -> 60으로 변경
             frame[y:y+cell_height, x:x+cell_width] = display_time_skipped
     
     return frame
