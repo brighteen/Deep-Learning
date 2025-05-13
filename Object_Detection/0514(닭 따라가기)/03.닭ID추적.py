@@ -4,6 +4,7 @@ import numpy as np
 import time
 import pandas as pd
 from datetime import datetime
+import argparse
 from ultralytics import YOLO  # YOLOv8 모델을 위한 라이브러리
 from PIL import ImageFont, ImageDraw, Image
 from collections import defaultdict
@@ -294,9 +295,7 @@ class ChickenTracker:
                         if set_id1 != -1 and set_id2 != -1:
                             self._merge_sets(set_id1, set_id2)
         
-        return current_ids, self.id_sets
-    
-    def get_tracking_stats(self):
+        return current_ids, self.id_sets    def get_tracking_stats(self):
         """
         추적 통계 정보를 계산합니다.
         
@@ -329,7 +328,8 @@ class ChickenTracker:
             'reappearance_events': reappearance_events,
             'set_details': set_stats
         }
-      def export_to_csv(self, filename=None):
+    
+    def export_to_csv(self, filename=None):
         """
         닭 ID 변화 정보만 CSV 파일로 내보냅니다.
         
@@ -459,8 +459,8 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
     fps = cap.get(cv2.CAP_PROP_FPS)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     delay = int(1000 / fps)  # 프레임 간 지연시간 (밀리초)
-    
-    # 비디오 정보 출력    print(f"원본 영상 크기: {width}x{height}")
+      # 비디오 정보 출력
+    print(f"원본 영상 크기: {width}x{height}")
     print(f"조절 비율: {scale_factor}")
     print(f"영상 재생 중... (FPS: {fps:.2f})")
     print(f"그리드 크기: {grid_size}x{grid_size}")
@@ -474,8 +474,7 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
     print("- '[/]' 키: 탐지 임계값 조절")
     print("- 스페이스바: 재생/일시정지")
     print("- 'a'/'d' 키: 뒤로/앞으로 5초")
-    print("- 'f' 키: 프레임 스킵 값 변경")
-      # 각종 상태 변수
+    print("- 'f' 키: 프레임 스킵 값 변경")    # 각종 상태 변수
     is_paused = False
     curr_frame_pos = 0
     is_grid_mode = True  # 그리드 모드 여부
@@ -484,7 +483,8 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
     
     # YOLO 탐지 관련 상태
     yolo_detection_active = True  # 초기에 YOLO 탐지 활성화
-      # 마우스 콜백 함수
+    
+    # 마우스 콜백 함수
     def mouse_callback(event, x, y, flags, param):
         nonlocal selected_cell, is_grid_mode
         
@@ -504,8 +504,7 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
     
     # 마우스 콜백 등록
     cv2.namedWindow('Video with Tracking')
-    cv2.setMouseCallback('Video with Tracking', mouse_callback)
-      # 처음 프레임 번호 저장
+    cv2.setMouseCallback('Video with Tracking', mouse_callback)    # 처음 프레임 번호 저장
     curr_frame_pos = 0
     frame_count = 0  # 프레임 카운터 추가 (스킵에 사용)
     
@@ -531,7 +530,9 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
             
             if not ret:
                 print("프레임 읽기 실패.")
-                break        # 닭 탐지 및 추적 (YOLO가 활성화된 경우)
+                break
+                
+        # 닭 탐지 및 추적 (YOLO가 활성화된 경우)
         chicken_count = 0
         chicken_ids = []
         chicken_sets = []
@@ -628,9 +629,8 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
                 for col in range(grid_size):
                     x = col * cell_width + cell_width // 2 - 20
                     y = row * cell_height + cell_height // 2
-                    
-                    # 특별히 (2,1) 셀을 강조
-                    if row == 2 and col == 1:
+                              # 특별히 target_cell 강조
+                    if (row, col) == target_cell:
                         cv2.putText(display_frame, f"({row},{col})", (x, y), 
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 3)
                         # 셀에 사각형 강조
@@ -663,8 +663,7 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
         
         # 프레임에 정보 표시
         time_pos = curr_frame_pos / fps  # 현재 시간 위치(초)
-        total_time = total_frames / fps   # 총 시간(초)
-          # 상태 정보 표시 (한글 지원)
+        total_time = total_frames / fps   # 총 시간(초)        # 상태 정보 표시 (한글 지원)
         display_frame = put_text_on_image(display_frame, f"배율: {scale_factor:.2f}", (10, 30), 25, (0, 255, 0))
         display_frame = put_text_on_image(display_frame, f"시간: {time_pos:.1f}초 / {total_time:.1f}초", (10, 60), 25, (0, 255, 0))
         display_frame = put_text_on_image(display_frame, f"{'일시정지' if is_paused else '재생 중'}", (10, 90), 25, (0, 255, 0))
@@ -686,9 +685,8 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
             if yolo_detection_active:
                 display_frame = put_text_on_image(display_frame, f"탐지된 닭: {chicken_count}마리", 
                             (10, 210), 25, (0, 255, 255))
-                
-                # 추적 정보 표시
-                if selected_cell == (2, 1) and not is_grid_mode:
+                  # 추적 정보 표시
+                if selected_cell == target_cell and not is_grid_mode:
                     stats = tracker.get_tracking_stats()
                     display_frame = put_text_on_image(display_frame, f"ID 집합: {stats['id_sets']}개", 
                                 (10, 240), 25, (0, 255, 255))
@@ -749,15 +747,15 @@ def play_video_with_tracking(video_path, model_path, grid_size=5, scale_factor=1
             if yolo_enabled:
                 conf_threshold = min(0.9, conf_threshold + 0.1)
                 print(f"탐지 임계값 변경: {conf_threshold:.2f}")
-                
-        elif key == ord('+') or key == ord('='):  # '+' 키: 확대
+                  elif key == ord('+') or key == ord('='):  # '+' 키: 확대
             scale_factor += 0.1
             print(f"확대: {scale_factor:.2f}")
-              elif key == ord('-'):  # '-' 키: 축소
+        elif key == ord('-'):  # '-' 키: 축소
             if scale_factor > 0.2:  # 너무 작아지지 않도록 제한
                 scale_factor -= 0.1
                 print(f"축소: {scale_factor:.2f}")
-                  elif key == ord('f'):  # 'f' 키: 프레임 스킵 값 변경
+                
+        elif key == ord('f'):  # 'f' 키: 프레임 스킵 값 변경
             # 화면에 프롬프트 표시
             prompt_frame = display_frame.copy()
             prompt_frame = put_text_on_image(prompt_frame, 
