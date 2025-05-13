@@ -76,3 +76,94 @@ $$
 ### 결론
 * 바이어스는 출력값에 **직접 더해지는 값**이기 때문에,
 * 미분 시 **항상 해당 레이어 출력의 gradient와 같아진다**.
+
+## 딥러닝 모델의 구현과 학습
+### 손실 함수 구현
+
+Mean Squared Error(MSE)는 다음과 같이 구현함:
+```python
+def mean_squared_error(y, t):
+    return 0.5 * np.sum((y - t)**2) / y.shape[0]
+```
+
+계층으로서의 MSE 구현:
+```python
+class MeanSquaredError:
+    def __init__(self):
+        self.y = None    # 예측값
+        self.t = None    # 정답값
+        self.loss = None # 손실값
+        
+    def forward(self, x, t):
+        self.y = x
+        self.t = t
+        self.loss = 0.5 * mean_squared_error(self.y, self.t) / self.y.shape[0]
+        return self.loss
+        
+    def backward(self, dout=1):
+        batch_size = self.t.shape[0]
+        dx = (self.y - self.t) / batch_size
+        return dx
+```
+
+### 신경망 클래스 구현
+
+```python
+class Neural_Network:
+    def __init__(self, input_size, hidden_size, output_size, weight_init_std=0.01):
+        # 가중치 초기화
+        self.params = {}
+        self.params['W1'] = np.random.randn(input_size, hidden_size)
+        self.params['b1'] = np.zeros(hidden_size)
+        self.params['W2'] = np.random.randn(hidden_size, output_size)
+        self.params['b2'] = np.zeros(output_size)
+        
+        # 계층 구성
+        self.layers = OrderedDict()
+        self.layers['Affine1'] = Affine(self.params['W1'], self.params['b1'])
+        self.layers['Sigmoid'] = Sigmoid()
+        self.layers['Affine2'] = Affine(self.params['W2'], self.params['b2'])
+        self.last_layer = MeanSquaredError()
+```
+
+### 학습 과정 구현
+
+신경망의 학습은 다음 과정으로 진행됨:
+
+1. 미니배치: 훈련 데이터에서 무작위로 일부 데이터를 추출
+2. 기울기 계산: 미니배치의 손실 함수 값을 줄이는 방향으로 가중치 매개변수 기울기 계산
+3. 매개변수 갱신: 기울기 방향으로 매개변수 값 갱신
+4. 반복: 1~3 과정을 반복
+
+```python
+# 학습 예시
+network = Neural_Network(input_size=2, hidden_size=2, output_size=1)
+iters_num = 1000
+learning_rate = 0.1
+
+for i in range(iters_num):
+    # 기울기 계산
+    grad = network.gradient(X_data, y_data)
+    
+    # 매개변수 갱신
+    for key in ('W1', 'b1', 'W2', 'b2'):
+        network.params[key] -= learning_rate * grad[key]
+    
+    # 학습 경과 출력
+    if i % 100 == 0:
+        loss = network.loss(X_data, y_data)
+        print(f"iteration {i}: loss = {loss}")
+```
+
+### XOR 문제에 적용
+
+이진 분류 문제인 XOR 문제에 신경망 적용:
+
+| 입력 | 출력 |
+|------|-----|
+| [1,1] | 0   |
+| [1,0] | 1   |
+| [0,1] | 1   |
+| [0,0] | 0   |
+
+비선형 활성화 함수(시그모이드)를 사용하여 선형 분리가 불가능한 XOR 문제를 해결할 수 있음.
