@@ -1,10 +1,12 @@
+import cv2
+import os
+
 from TextRenderer import TextRenderer
 from ChickenDetector import ChickenDetector
 
 class VideoPlayer:
     """그리드 분할과 닭 탐지 기능을 갖춘 비디오 플레이어 클래스"""
-    
-    def __init__(self, video_path, model_path, grid_size=5, scale_factor=1.0):
+    def __init__(self, video_path, model_path, grid_size=5, scale_factor=1.0, detection_interval=5):
         """
         VideoPlayer 초기화
         
@@ -13,10 +15,13 @@ class VideoPlayer:
             model_path (str): YOLO 모델 파일 경로
             grid_size (int): 분할 그리드 크기 (grid_size x grid_size)
             scale_factor (float): 영상 크기 조절 비율 (기본값: 1.0)
+            detection_interval (int): 몇 프레임마다 객체 탐지를 수행할지 설정 (기본값: 5)
         """
         self.video_path = video_path
         self.grid_size = grid_size
         self.scale_factor = scale_factor
+        self.detection_interval = detection_interval
+        self.frame_count = 0  # 프레임 카운터
         
         # 비디오 캡처 객체 생성
         self.cap = None
@@ -34,6 +39,7 @@ class VideoPlayer:
         self.selected_cell = None
         self.yolo_detection_active = False
         self.conf_threshold = 0.5
+        self.latest_results = None  # 가장 최근 탐지 결과 저장
         
         # 비디오 정보 변수
         self.width = 0
@@ -61,24 +67,26 @@ class VideoPlayer:
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.delay = int(1000 / self.fps)  # 프레임 간 지연시간 (밀리초)
-        
-        # 비디오 정보 출력
+        self.delay = int(1000 / self.fps)  # 프레임 간 지연시간 (밀리초)        # 비디오 정보 출력
         self._print_video_info()
         return True
-    
+        
     def _print_video_info(self):
         """비디오 정보와 조작 방법을 출력합니다."""
         print(f"원본 영상 크기: {self.width}x{self.height}")
         print(f"조절 비율: {self.scale_factor}")
         print(f"영상 재생 중... (FPS: {self.fps:.2f})")
         print(f"그리드 크기: {self.grid_size}x{self.grid_size}")
+        print(f"객체 탐지 간격: {self.detection_interval}프레임")
         print("조작 방법:")
         print("- 'q' 키: 종료")
         print("- 'g' 키: 그리드 모드/확대 모드 전환")
         print("- '+/-' 키: 확대/축소")
         print("- 'y' 키: YOLO 탐지 켜기/끄기")
+        print("- 't' 키: 객체 추적(ID 표시) 켜기/끄기")
+        print("- 'c' 키: 일관된 ID 추적 켜기/끄기")
         print("- '[/]' 키: 탐지 임계값 조절")
+        print("- '1'/'2' 키: 탐지 간격 감소/증가")
         print("- 스페이스바: 재생/일시정지")
         print("- 'a'/'d' 키: 뒤로/앞으로 5초")
         print("- 마우스 클릭: 그리드 칸 선택/확대")
@@ -113,10 +121,10 @@ class VideoPlayer:
             ret, frame = self.cap.read()
             
         return ret, frame
-    
     def detect_chickens(self, frame):
         """
         프레임에서 닭을 탐지합니다.
+        설정된 프레임 간격(detection_interval)에 따라 객체 탐지를 수행합니다.
         
         Args:
             frame: 탐지할 프레임
@@ -125,6 +133,12 @@ class VideoPlayer:
             처리된 프레임과 닭 개수
         """
         chicken_count = 0
+        
+        # 프레임 카운터 증가
+        self.frame_count = (self.frame_count + 1) % self.detection_interval
+        
+        # YOLO 탐지가 활성화되고, 현재 프레임이 탐지 간격에 해당하는 경우에만 탐지 수행
+        do_detection = self.frame_count == 0 or self.is_paused
         
         if self.detector.enabled and self.yolo_detection_active:
             if not self.is_grid_mode and self.selected_cell is not None:
@@ -135,19 +149,133 @@ class VideoPlayer:
                 x = col * cell_width
                 y = row * cell_height
                 cell_frame = frame[y:y+cell_height, x:x+cell_width]
-                results, chicken_count = self.detector.detect(cell_frame, self.conf_threshold)
                 
-                # 탐지 결과를 프레임에 그림 (레이블 크기와 선 두께 조정)
-                if results is not None:
+                # 객체 탐지 간격에 따른 탐지
+                if do_detection:
+                    results, chicken_count = self.detector.detect(cell_frame, self.conf_threshold)
+                    self.latest_results = results
+                else:
+                    # 이전 탐지 결과 사용
+                    results = self.latest_results
+                    if results is not None:
+                        chicken_count = len(results.boxes) if hasattr(results, 'boxes') else 0
+                  # 탐지 결과를 프레임에 그림 (레이블 크기와 선 두께 조정)
+                if results is not None:                    # 기본 시각화
                     plotted_cell = results.plot(labels=True, font_size=0.5, line_width=1)
+                    
+                    # 일관된 ID 표시가 활성화된 경우 ID를 수동으로 오버레이
+                    if hasattr(self.detector, 'use_consistent_ids') and self.detector.use_consistent_ids and hasattr(results, 'display_ids'):
+                        # 박스와 ID 정보 가져오기
+                        xyxy = results.boxes.xyxy.cpu().numpy()
+                        
+                        for i, box in enumerate(xyxy):
+                            if i < len(results.display_ids):                                # 박스 좌표
+                                x1, y1, x2, y2 = box
+                                # 원래 ID와 일관된 ID 모두 표시
+                                original_id = int(results.boxes.id[i].item())
+                                consistent_id = results.display_ids[i]
+                                
+                                # ID가 속한 집합 가져오기
+                                id_set = set()
+                                if hasattr(self.detector, 'id_to_set_index') and original_id in self.detector.id_to_set_index:
+                                    set_index = self.detector.id_to_set_index[original_id]
+                                    if set_index < len(self.detector.chicken_id_sets):
+                                        id_set = self.detector.chicken_id_sets[set_index]
+                                  # ID 집합이 있으면 집합 형식으로 표시
+                                if id_set:
+                                    id_set_str = "{" + ", ".join(map(str, id_set)) + "}"
+                                    # 텍스트 크기 계산
+                                    text = f"ID:{consistent_id} {id_set_str}"
+                                    font_scale = 0.6
+                                    thickness = 2
+                                    font = cv2.FONT_HERSHEY_SIMPLEX
+                                    (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, thickness)
+                                    
+                                    # 텍스트 배경 그리기 (가독성 향상)
+                                    text_bg_top = max(0, int(y1) - text_height - 10)
+                                    cv2.rectangle(plotted_cell, (int(x1), text_bg_top), 
+                                                (int(x1) + text_width, text_bg_top + text_height + 10), (0, 0, 0), -1)
+                                    
+                                    # 텍스트 그리기
+                                    cv2.putText(plotted_cell, text, (int(x1), int(y1) - 5),
+                                            font, font_scale, (0, 255, 255), thickness)
+                                elif original_id != consistent_id:
+                                    # 매핑 정보만 있는 경우
+                                    text = f"ID:{original_id}->{consistent_id}"
+                                    font_scale = 0.6
+                                    cv2.putText(plotted_cell, text, (int(x1), int(y1) - 5),
+                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                                else:
+                                    # 변경이 없는 경우 일관된 ID만 표시
+                                    text = f"ID:{consistent_id}"
+                                    font_scale = 0.6
+                                    cv2.putText(plotted_cell, text, (int(x1), int(y1) - 5),
+                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                    
                     frame[y:y+cell_height, x:x+cell_width] = plotted_cell
             else:
                 # 전체 프레임에서 닭 탐지
-                results, chicken_count = self.detector.detect(frame, self.conf_threshold)
+                if do_detection:
+                    results, chicken_count = self.detector.detect(frame, self.conf_threshold)
+                    self.latest_results = results
+                else:                    # 이전 탐지 결과 사용
+                    results = self.latest_results
+                    if results is not None:
+                        chicken_count = len(results.boxes) if hasattr(results, 'boxes') else 0
                 
                 # 탐지 결과를 프레임에 그림 (레이블 크기와 선 두께 조정)
                 if results is not None:
+                    # 기본 시각화
                     frame = results.plot(labels=True, font_size=0.4, line_width=1)
+                    
+                    # 일관된 ID 표시가 활성화된 경우 ID를 수동으로 오버레이
+                    if hasattr(self.detector, 'use_consistent_ids') and self.detector.use_consistent_ids and hasattr(results, 'display_ids'):
+                        # 박스와 ID 정보 가져오기
+                        xyxy = results.boxes.xyxy.cpu().numpy()
+                        
+                        for i, box in enumerate(xyxy):
+                            if i < len(results.display_ids):                                # 박스 좌표
+                                x1, y1, x2, y2 = box
+                                # 원래 ID와 일관된 ID 모두 표시
+                                original_id = int(results.boxes.id[i].item())
+                                consistent_id = results.display_ids[i]
+                                
+                                # ID가 속한 집합 가져오기
+                                id_set = set()
+                                if hasattr(self.detector, 'id_to_set_index') and original_id in self.detector.id_to_set_index:
+                                    set_index = self.detector.id_to_set_index[original_id]
+                                    if set_index < len(self.detector.chicken_id_sets):
+                                        id_set = self.detector.chicken_id_sets[set_index]
+                                  # ID 집합이 있으면 집합 형식으로 표시
+                                if id_set:
+                                    id_set_str = "{" + ", ".join(map(str, id_set)) + "}"
+                                    # 텍스트 크기 계산
+                                    text = f"ID:{consistent_id} {id_set_str}"
+                                    font_scale = 0.6
+                                    thickness = 2
+                                    font = cv2.FONT_HERSHEY_SIMPLEX
+                                    (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, thickness)
+                                    
+                                    # 텍스트 배경 그리기 (가독성 향상)
+                                    text_bg_top = max(0, int(y1) - text_height - 10)
+                                    cv2.rectangle(frame, (int(x1), text_bg_top), 
+                                                (int(x1) + text_width, text_bg_top + text_height + 10), (0, 0, 0), -1)
+                                    
+                                    # 텍스트 그리기
+                                    cv2.putText(frame, text, (int(x1), int(y1) - 5),
+                                            font, font_scale, (0, 255, 255), thickness)
+                                elif original_id != consistent_id:
+                                    # 매핑 정보만 있는 경우
+                                    text = f"ID:{original_id}->{consistent_id}"
+                                    font_scale = 0.6
+                                    cv2.putText(frame, text, (int(x1), int(y1) - 5),
+                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+                                else:
+                                    # 변경이 없는 경우 일관된 ID만 표시
+                                    text = f"ID:{consistent_id}"
+                                    font_scale = 0.6
+                                    cv2.putText(frame, text, (int(x1), int(y1) - 5),
+                                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
         
         return frame, chicken_count
     
@@ -174,8 +302,7 @@ class VideoPlayer:
             new_width = int(display_width * self.scale_factor)
             new_height = int(display_height * self.scale_factor)
             display_frame = cv2.resize(display_frame, (new_width, new_height))
-        
-        # 상태 정보 표시
+          # 상태 정보 표시
         display_frame = self._add_status_info(display_frame, chicken_count)
         
         return display_frame
@@ -208,7 +335,6 @@ class VideoPlayer:
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         
         return display_frame
-    
     def _prepare_zoomed_mode_frame(self, frame):
         """확대 모드에서의 프레임을 준비합니다."""
         if self.selected_cell is not None:
@@ -223,7 +349,7 @@ class VideoPlayer:
             self.is_grid_mode = True  # 선택된 셀이 없으면 그리드 모드로 전환
         
         return display_frame
-    
+        
     def _add_status_info(self, frame, chicken_count):
         """프레임에 상태 정보를 추가합니다."""
         time_pos = self.curr_frame_pos / self.fps  # 현재 시간 위치(초)
@@ -250,9 +376,76 @@ class VideoPlayer:
             if self.yolo_detection_active:
                 frame = self.text_renderer.put_text(frame, f"탐지된 닭: {chicken_count}마리", 
                         (10, 210), 25, (0, 255, 255))
+                frame = self.text_renderer.put_text(frame, f"탐지 간격: {self.detection_interval}프레임마다", 
+                        (10, 240), 25, (0, 255, 255))
+                  # 추적 상태 표시
+                tracking_color = (0, 255, 255) if hasattr(self.detector, 'tracking_enabled') and self.detector.tracking_enabled else (0, 0, 255)
+                frame = self.text_renderer.put_text(frame, 
+                        f"객체 추적: {'켜짐' if hasattr(self.detector, 'tracking_enabled') and self.detector.tracking_enabled else '꺼짐'}", 
+                        (10, 270), 25, tracking_color)
+                
+                # 일관된 ID 추적 상태 표시
+                if hasattr(self.detector, 'tracking_enabled') and self.detector.tracking_enabled:
+                    consistent_id_color = (0, 255, 255) if hasattr(self.detector, 'use_consistent_ids') and self.detector.use_consistent_ids else (0, 0, 255)
+                    frame = self.text_renderer.put_text(frame, 
+                            f"일관된 ID: {'켜짐' if hasattr(self.detector, 'use_consistent_ids') and self.detector.use_consistent_ids else '꺼짐'}", 
+                            (10, 300), 25, consistent_id_color)
+        
+        return frame    
+    
+    def _visualize_id_sets(self, frame, x_offset=10, y_offset=330):
+        """
+        객체 ID 집합을 화면에 시각화합니다.
+        
+        Args:
+            frame: 시각화할 프레임
+            x_offset: X 좌표 시작점
+            y_offset: Y 좌표 시작점
+            
+        Returns:
+            시각화가 추가된 프레임
+        """
+        if not hasattr(self.detector, 'use_consistent_ids') or not self.detector.use_consistent_ids:
+            return frame
+            
+        # ID 집합 정보가 있는 경우
+        if hasattr(self.detector, 'chicken_id_sets') and len(self.detector.chicken_id_sets) > 0:
+            # 제목 표시
+            frame = self.text_renderer.put_text(frame, "ID 집합:", (x_offset, y_offset), 25, (255, 255, 0))
+            y_offset += 30
+            
+            # 각 ID 집합을 표시 (최대 5개까지만)
+            displayed_sets = 0
+            for i, id_set in enumerate(self.detector.chicken_id_sets):
+                if i >= 5:  # 최대 5개 집합만 표시
+                    break
+                
+                if not id_set:
+                    continue
+                    
+                # 대표 ID 가져오기
+                display_id = self.detector.set_to_display_id.get(i, min(id_set))
+                
+                # ID 집합을 문자열로 변환
+                id_str = f"Set {i+1} [대표 ID: {display_id}]: " + ", ".join([str(id) for id in id_set])
+                
+                # 텍스트가 너무 길면 자르기
+                if len(id_str) > 40:
+                    id_str = id_str[:37] + "..."
+                
+                # 텍스트 표시
+                frame = self.text_renderer.put_text(frame, id_str, 
+                        (x_offset, y_offset + displayed_sets * 25), 20, (255, 255, 0))
+                displayed_sets += 1
+            
+            # 더 많은 집합이 있을 경우 표시
+            if len(self.detector.chicken_id_sets) > 5:
+                frame = self.text_renderer.put_text(frame, 
+                        f"... 외 {len(self.detector.chicken_id_sets) - 5}개의 집합이 더 있습니다.",
+                        (x_offset, y_offset + displayed_sets * 25), 20, (255, 255, 0))
         
         return frame
-    
+
     def handle_keypress(self, key):
         """
         키 입력에 따른 동작을 처리합니다.
@@ -275,9 +468,26 @@ class VideoPlayer:
             if self.detector.enabled:
                 self.yolo_detection_active = not self.yolo_detection_active
                 print(f"YOLO 탐지: {'활성화' if self.yolo_detection_active else '비활성화'}")
-            else:
+            else:                
                 print("YOLO 모델이 로드되지 않았습니다.")
+        
+        elif key == ord('t'):  # 't' 키: 객체 추적 켜기/끄기
+            if self.detector.enabled and hasattr(self.detector, 'toggle_tracking'):
+                self.detector.toggle_tracking()
                 
+        elif key == ord('c'):  # 'c' 키: 일관된 ID 추적 켜기/끄기
+            if self.detector.enabled and hasattr(self.detector, 'toggle_consistent_ids'):
+                self.detector.toggle_consistent_ids()
+                
+        elif key == ord('1'):  # '1' 키: 객체 탐지 간격 감소
+            if self.detection_interval > 1:
+                self.detection_interval -= 1
+                print(f"객체 탐지 간격 변경: {self.detection_interval}프레임마다")
+            
+        elif key == ord('2'):  # '2' 키: 객체 탐지 간격 증가
+            self.detection_interval += 1
+            print(f"객체 탐지 간격 변경: {self.detection_interval}프레임마다")
+            
         elif key == ord('['):  # '[' 키: 임계값 낮추기
             if self.detector.enabled:
                 self.conf_threshold = max(0.1, self.conf_threshold - 0.1)

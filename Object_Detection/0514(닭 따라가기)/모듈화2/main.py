@@ -1,11 +1,4 @@
-import cv2
 import os
-import numpy as np
-import time
-from ultralytics import YOLO
-from PIL import ImageFont, ImageDraw, Image
-from TextRenderer import TextRenderer
-from ChickenDetector import ChickenDetector
 from VideoPlayer import VideoPlayer
 
 

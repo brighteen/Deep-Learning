@@ -1,3 +1,6 @@
+from PIL import ImageFont, ImageDraw, Image
+import numpy as np
+
 class TextRenderer:
     """한글 텍스트를 이미지에 렌더링하는 클래스"""
     
