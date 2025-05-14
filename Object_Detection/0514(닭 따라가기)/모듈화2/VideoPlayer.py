@@ -6,7 +6,7 @@ from ChickenDetector import ChickenDetector
 
 class VideoPlayer:
     """그리드 분할과 닭 탐지 기능을 갖춘 비디오 플레이어 클래스"""
-    def __init__(self, video_path, model_path, grid_size=5, scale_factor=1.0, detection_interval=5):
+    def __init__(self, video_path, model_path, grid_size=5, scale_factor=1.0, detection_interval=30):
         """
         VideoPlayer 초기화
         
@@ -114,6 +114,7 @@ class VideoPlayer:
         if not self.is_paused:
             # 일반 재생 모드: 다음 프레임 읽기
             ret, frame = self.cap.read()
+            # frame = frame[0:400, 0:400]  # 프레임 크기 조정
             self.curr_frame_pos = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
         else:
             # 일시정지 모드: 현재 프레임 유지
@@ -536,7 +537,8 @@ class VideoPlayer:
             return
             
         self.setup_mouse_callback()
-        
+        # no = 0
+
         # 메인 루프
         while True:
             # 프레임 읽기
@@ -545,6 +547,11 @@ class VideoPlayer:
             if not ret:
                 print("영상이 끝났거나 읽기 실패.")
                 break
+            
+            # 모든 프레임을 처리하도록 변경 (빠른 재생 제거)
+            # no = (no + 1)
+            # if no % 25 != 0:
+            #     continue
             
             # 닭 탐지
             frame, chicken_count = self.detect_chickens(frame)
