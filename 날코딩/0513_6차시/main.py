@@ -1,7 +1,7 @@
 import numpy as np
 
 from LinearModel import LinearModel
-from MeanSquaredError import MeanSquardError
+from MeanSquaredError import MeanSquaredError
 
 if __name__ == "__main__": # 다른 파일에서 main.py를 가져올 때 이 __main__안에 코드는 무시
     np.random.seed(0)
@@ -12,7 +12,7 @@ if __name__ == "__main__": # 다른 파일에서 main.py를 가져올 때 이 __
     # 두번의 선형변환, 손실함수 객체 선언
     model1 = LinearModel()
     model2 = LinearModel()
-    mse = MeanSquardError()
+    mse = MeanSquaredError()
 
     for i in range(0,3):
         print(f'\n===={i+1}번째 반복====')
