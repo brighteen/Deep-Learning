@@ -1,4 +1,14 @@
 import numpy as np
+import sys
+import os
+
+# 현재 스크립트의 경로를 가져옵니다
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 상위 디렉토리 경로를 추가합니다
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+# 이제 상위 디렉토리의 모듈을 직접 import 할 수 있습니다
 from common.LinearModel import LinearModel
 from common.Sigmoid import Sigmoid
 from common.MeanSquaredError import MeanSquaredError
