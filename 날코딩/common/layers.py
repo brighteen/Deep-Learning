@@ -53,6 +53,7 @@ class Affine:
         """
         dx = np.dot(dout, self.W.T)  # 입력 x에 대한 기울기: dx = dout*W^T
         self.dW = np.dot(self.x.T, dout)  # 가중치 W에 대한 기울기: dW = x^T*dout
+        # [[dL/dw11],[dL/dw21]] = [[dy/dw11*dL/dy],[dy/dw21*dL/dy]] -> np.dot으로 손쉽게 행렬계산
         self.db = np.sum(dout, axis=0)  # 편향 b에 대한 기울기: db = sum(dout)
         
         dx = dx.reshape(*self.original_x_shape)  # 입력 데이터 원래 모양으로 변경(텐서 대응)
