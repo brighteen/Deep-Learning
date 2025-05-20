@@ -217,7 +217,7 @@ def main():
     fps = cap.get(cv2.CAP_PROP_FPS)
     print(f"비디오 FPS: {fps}")
     
-    # 비디오 창 생성
+    # 비디오 창 생성 (크기 조절 가능)
     cv2.namedWindow("Object Detection", cv2.WINDOW_NORMAL)
     
     # ID 관리자 초기화
@@ -233,6 +233,10 @@ def main():
     # 프레임 카운터
     frame_count = 0
     
+    # 관심 영역 설정 (필요에 따라 수정)
+    roi_y1, roi_y2 = 1000, 1600  # 세로 범위
+    roi_x1, roi_x2 = 900, 1800   # 가로 범위
+    
     while True:
         # 프레임 읽기
         ret, frame = cap.read()
@@ -240,8 +244,12 @@ def main():
             print("비디오 끝")
             break
 
-        # frame = frame[1000:1500, 200:1000]
-        frame = frame[100:1000, 500:1400]
+        # 관심 영역 설정
+        frame = frame[roi_y1:roi_y2, roi_x1:roi_x2]
+        
+        # 윈도우 크기 자동 조정 (관심 영역 크기에 맞게)
+        height, width = frame.shape[:2]
+        cv2.resizeWindow("Object Detection", width, height)
             
         # 프레임 카운터 증가
         frame_count += 1
@@ -308,7 +316,7 @@ def main():
                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
         
         # 시간 정보 표시
-        cv2.putText(frame, f"남은 시간: {int(remaining_time)}초", (10, 30), 
+        cv2.putText(frame, f"time: {int(remaining_time)}s", (10, 30), 
                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         
         # 화면에 표시
@@ -321,7 +329,7 @@ def main():
     
     # 결과 저장
     print(f"ID 추적 결과를 저장합니다: {result_file}")
-    id_manager.save_id_sets_to_file(result_file)
+    # id_manager.save_id_sets_to_file(result_file)
     
     # 자원 해제
     cap.release()
