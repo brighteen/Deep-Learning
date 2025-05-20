@@ -18,7 +18,7 @@ class IDManager:
         self.all_detected_ids = set()  # 이전에 탐지된 모든 ID
         
         # 설정
-        self.distance_threshold = 15  # 같은 객체로 판단할 최대 거리
+        self.distance_threshold = 11  # 같은 객체로 판단할 최대 거리
     
     def update(self, detected_objects):
         """
@@ -245,20 +245,20 @@ def main():
     id_manager = IDManager()
     
     # 탐지 설정
-    conf_threshold = 0.6
+    conf_threshold = 0.7
     
     # 시간 제한 설정 (1분)
     start_time = time.time()
-    duration = 300  # 60초 (1분)
+    duration = 1200  # 1200초 (20분)
     
     # 프레임 카운터 및 스킵 설정
     frame_count = 0
     processed_frames = 0
-    frame_skip = 60  # 3프레임마다 1프레임만 처리
+    frame_skip = 10  # 30프레임마다 1프레임만 처리
     
     # 관심 영역 설정 (필요에 따라 수정)
-    roi_y1, roi_y2 = 1000, 1600  # 세로 범위
-    roi_x1, roi_x2 = 900, 1800   # 가로 범위
+    roi_y1, roi_y2 = 800, 1600  # 세로 범위
+    roi_x1, roi_x2 = 700, 1800   # 가로 범위
     
     # 첫 프레임을 읽어 관심 영역의 크기를 확인
     ret, first_frame = cap.read()
