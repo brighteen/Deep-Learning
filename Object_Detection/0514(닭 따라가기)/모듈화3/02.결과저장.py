@@ -14,6 +14,7 @@ class IDManager:
         self.set_to_display_id = {} # 각 집합의 대표 ID
         self.id_to_box = {}  # 각 ID의 바운딩 박스 정보
         self.frame_count = 0  # 현재 프레임 번호
+        self.all_detected_ids = set()  # 이전에 탐지된 모든 ID
         
         # 설정
         self.distance_threshold = 15  # 같은 객체로 판단할 최대 거리
@@ -34,6 +35,9 @@ class IDManager:
             
             # ID가 유효한 경우에만 처리
             if obj_id != -1:
+                # 모든 탐지된 ID 기록
+                self.all_detected_ids.add(obj_id)
+                
                 # 바운딩 박스 정보 저장
                 self.id_to_box[obj_id] = box
                 
@@ -49,6 +53,19 @@ class IDManager:
         
         # ID 집합 병합 처리
         self._merge_id_sets(detected_objects)
+        
+        # 한 번도 집합에 포함되지 않은 ID 처리
+        self._ensure_all_ids_in_sets()
+    
+    def _ensure_all_ids_in_sets(self):
+        """모든 탐지된 ID가 어떤 집합에 속하도록 보장"""
+        for obj_id in self.all_detected_ids:
+            if obj_id not in self.id_to_set_index:
+                # 집합에 포함되지 않은 ID는 새 집합 생성
+                set_index = len(self.id_sets)
+                self.id_sets.append({obj_id})
+                self.id_to_set_index[obj_id] = set_index
+                self.set_to_display_id[set_index] = obj_id
     
     def _merge_id_sets(self, objects):
         """서로 가까운 객체들의 ID 집합을 병합"""
@@ -128,6 +145,9 @@ class IDManager:
     
     def save_id_sets_to_file(self, filename):
         """ID 집합을 파일로 저장 - 모든 ID 집합 포함"""
+        # 모든 탐지된 ID가 집합에 포함되도록 보장
+        self._ensure_all_ids_in_sets()
+        
         # 최종 ID 집합 생성 (대표 ID를 키로 사용)
         final_id_sets = {}
         
@@ -231,7 +251,7 @@ def main():
         
         # 1분 경과 확인
         if elapsed_time >= duration:
-            print(f"time({duration}s).")
+            print(f"설정한 시간({duration}초) 경과. 처리 종료.")
             break
         
         # 화면에 시간 정보 표시용
