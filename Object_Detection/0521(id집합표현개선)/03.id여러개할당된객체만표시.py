@@ -3,6 +3,7 @@ import os
 import numpy as np
 from ultralytics import YOLO
 import time
+from datetime import datetime
 
 class IDManager:
     """객체 ID를 관리하는 간소화된 클래스"""
@@ -187,8 +188,24 @@ def main():
     # 현재 스크립트 파일의 경로 가져오기
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # 결과 파일 경로 설정 (스크립트와 동일한 폴더에 저장)
-    result_file = os.path.join(script_dir, "tracking_results.txt")
+    # 현재 날짜와 시간으로 파일명 생성
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # 결과 저장 폴더 구조 생성
+    results_dir = os.path.join(script_dir, "results")
+    video_dir = os.path.join(results_dir, "video")
+    txt_dir = os.path.join(results_dir, "txt")
+    
+    # 폴더가 없으면 생성
+    os.makedirs(video_dir, exist_ok=True)
+    os.makedirs(txt_dir, exist_ok=True)
+    
+    # 결과 파일 경로 설정
+    txt_file = os.path.join(txt_dir, f"tracking_results_{timestamp}.txt")
+    video_file = os.path.join(video_dir, f"tracking_video_{timestamp}.mp4")
+    
+    print(f"텍스트 결과 저장 경로: {txt_file}")
+    print(f"영상 저장 경로: {video_file}")
     
     # 파일 경로 설정
     video_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\0_8_IPC1_20230108162038.mp4"
@@ -215,7 +232,11 @@ def main():
     
     # 비디오 정보 가져오기
     fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"비디오 FPS: {fps}")
+    print(f"원본 비디오 FPS: {fps}")
+    
+    # 저장 비디오 FPS 설정 (낮은 값으로 설정하여 영상 재생 시간 연장)
+    output_fps = 10.0  # 10 FPS로 저장 (원본보다 낮게 설정)
+    print(f"저장 비디오 FPS: {output_fps}")
     
     # 비디오 창 생성 (크기 조절 가능)
     cv2.namedWindow("Object Detection", cv2.WINDOW_NORMAL)
@@ -224,18 +245,44 @@ def main():
     id_manager = IDManager()
     
     # 탐지 설정
-    conf_threshold = 0.5
+    conf_threshold = 0.6
     
     # 시간 제한 설정 (1분)
     start_time = time.time()
-    duration = 60  # 60초 (1분)
+    duration = 300  # 60초 (1분)
     
-    # 프레임 카운터
+    # 프레임 카운터 및 스킵 설정
     frame_count = 0
+    processed_frames = 0
+    frame_skip = 60  # 3프레임마다 1프레임만 처리
     
     # 관심 영역 설정 (필요에 따라 수정)
     roi_y1, roi_y2 = 1000, 1600  # 세로 범위
     roi_x1, roi_x2 = 900, 1800   # 가로 범위
+    
+    # 첫 프레임을 읽어 관심 영역의 크기를 확인
+    ret, first_frame = cap.read()
+    if not ret:
+        print("비디오 첫 프레임을 읽을 수 없습니다.")
+        return
+    
+    # 관심 영역 설정 및 크기 확인
+    roi_frame = first_frame[roi_y1:roi_y2, roi_x1:roi_x2]
+    roi_height, roi_width = roi_frame.shape[:2]
+    
+    # VideoWriter 설정
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # mp4 코덱
+    out = cv2.VideoWriter(video_file, fourcc, output_fps, (roi_width, roi_height))
+    
+    # 비디오 시작 위치를 다시 처음으로 이동
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    
+    # 총 프레임 수 확인
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f"총 프레임 수: {total_frames}")
+    
+    # 처리된 프레임 저장용 리스트
+    saved_frames = []
     
     while True:
         # 프레임 읽기
@@ -244,19 +291,30 @@ def main():
             print("비디오 끝")
             break
 
-        # 관심 영역 설정
-        frame = frame[roi_y1:roi_y2, roi_x1:roi_x2]
-        
-        # 윈도우 크기 자동 조정 (관심 영역 크기에 맞게)
-        height, width = frame.shape[:2]
-        cv2.resizeWindow("Object Detection", width, height)
-            
         # 프레임 카운터 증가
         frame_count += 1
+        
+        # 프레임 스킵 (처리 속도 향상)
+        if frame_count % frame_skip != 0:
+            continue
+        
+        # 관심 영역 설정
+        roi_frame = frame[roi_y1:roi_y2, roi_x1:roi_x2].copy()
+        
+        # 윈도우 크기 자동 조정 (관심 영역 크기에 맞게)
+        height, width = roi_frame.shape[:2]
+        cv2.resizeWindow("Object Detection", width, height)
+        
+        # 처리된 프레임 수 증가
+        processed_frames += 1
         
         # 현재 시간 확인
         current_time = time.time()
         elapsed_time = current_time - start_time
+        
+        # 진행 상황 표시 (100프레임마다)
+        if processed_frames % 10 == 0:
+            print(f"처리 중... 프레임: {frame_count}/{total_frames} ({frame_count/total_frames*100:.1f}%), 처리된 프레임: {processed_frames}")
         
         # 1분 경과 확인
         if elapsed_time >= duration:
@@ -265,9 +323,26 @@ def main():
         
         # 화면에 시간 정보 표시용
         remaining_time = duration - elapsed_time
+
+        # 클래스 인덱스 확인 (이 부분은 모델 로드 후 한 번만 실행)
+        class_names = model.names
+        # print("사용 가능한 클래스:", class_names)
+
+        # chicks의 클래스 인덱스 찾기
+        chicks_idx = None
+        for idx, name in class_names.items():
+            if 'chick' in name.lower():
+                chicks_idx = idx
+                # print(f"병아리(chicks) 클래스 인덱스: {chicks_idx}")
+                break
+
+        if chicks_idx is None:
+            # print("경고: 'chicks' 클래스를 찾을 수 없습니다.")
+            # 클래스명이 정확히 매칭되지 않을 경우 수동으로 인덱스 설정
+            chicks_idx = 0  # 대부분의 경우 클래스 인덱스가 0부터 시작
         
         # 객체 탐지 (YOLOv8 추적 모드 사용)
-        results = model.track(frame, conf=conf_threshold, persist=True)[0]
+        results = model.track(roi_frame, conf=conf_threshold, persist=True, classes=[chicks_idx])[0]
         
         # 결과 추출
         boxes = results.boxes.xyxy.cpu().tolist() if hasattr(results.boxes, 'xyxy') else []
@@ -297,7 +372,7 @@ def main():
                     box_color = (0, 255, 0)  # 녹색(BGR)
                 
                 # 바운딩 박스 그리기
-                cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
+                cv2.rectangle(roi_frame, (x1, y1), (x2, y2), box_color, 2)
                 
                 # ID 집합이 2개 이상인 경우에만 레이블 표시
                 if len(id_set) > 1:
@@ -306,21 +381,29 @@ def main():
                     
                     # 배경 박스 그리기 (텍스트 가독성 향상)
                     (text_width, text_height), _ = cv2.getTextSize(id_set_str, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
-                    cv2.rectangle(frame, 
+                    cv2.rectangle(roi_frame, 
                                  (int(x1), int(y1) - text_height - 5), 
                                  (int(x1) + text_width + 5, int(y1)), 
                                  (0, 0, 150), -1)  # 어두운 빨간색 배경
                     
                     # 텍스트 표시
-                    cv2.putText(frame, id_set_str, (int(x1), int(y1) - 5),
+                    cv2.putText(roi_frame, id_set_str, (int(x1), int(y1) - 5),
                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
         
         # 시간 정보 표시
-        cv2.putText(frame, f"time: {int(remaining_time)}s", (10, 30), 
+        cv2.putText(roi_frame, f"time: {int(remaining_time)}s", (10, 30), 
                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         
+        # 프레임 번호 표시
+        cv2.putText(roi_frame, f"frame: {frame_count}", (10, 60), 
+                  cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+                  
+        # 영상 파일에 프레임 저장
+        out.write(roi_frame)
+        saved_frames.append(roi_frame)
+        
         # 화면에 표시
-        cv2.imshow("Object Detection", frame)
+        cv2.imshow("Object Detection", roi_frame)
         
         # 키 입력 처리 (q: 종료)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -328,12 +411,20 @@ def main():
             break
     
     # 결과 저장
-    print(f"ID 추적 결과를 저장합니다: {result_file}")
-    # id_manager.save_id_sets_to_file(result_file)
+    print(f"ID 추적 결과를 저장합니다: {txt_file}")
+    id_manager.save_id_sets_to_file(txt_file)
+    
+    # 저장된 영상 정보 출력
+    print(f"저장된 프레임 수: {len(saved_frames)}")
+    print(f"저장 영상 길이(예상): {len(saved_frames)/output_fps:.2f}초")
     
     # 자원 해제
     cap.release()
+    out.release()  # VideoWriter 자원 해제
     cv2.destroyAllWindows()
+    
+    print(f"영상 저장이 완료되었습니다: {video_file}")
+    print(f"실제 처리된 프레임: {processed_frames}/{frame_count} (전체 프레임의 {processed_frames/frame_count*100:.1f}%)")
 
 if __name__ == "__main__":
     main()
