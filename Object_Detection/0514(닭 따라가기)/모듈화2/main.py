@@ -6,7 +6,7 @@ if __name__ == "__main__":
     """메인 함수"""
     # 직접 경로 지정
     video_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\0_8_IPC1_20230108162038.mp4"
-    model_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\best_chick.pt"
+    model_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\best.pt"
       # 파일 존재 확인
     if os.path.exists(video_path):
         print(f"영상 파일을 로딩합니다: {os.path.basename(video_path)}")
