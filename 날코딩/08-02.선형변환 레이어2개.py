@@ -1,6 +1,11 @@
 import numpy as np
 
 from common.layers import Affine, MeanSquaredError
+'''
+data -> 선형 변환 1(node 2) -> 선형 변환 2(node 1) -> 손실함수
+z = [1,1]
+t = 0
+'''
 
 # 첫 선형변환 레이어: 두개의 예측값
 # 두번째 선형변환 레이어: 하나의 예측값
@@ -28,14 +33,14 @@ affine1 = Affine(W1, b1)
 affine2 = Affine(W2, b2)
 mse = MeanSquaredError()
 
-# print(f"W1: {affine1.W}, W1.shape: {np.shape(affine1.W)}") # W1: [[1.76405235 0.40015721], [0.97873798 2.2408932 ]], W1.shape: (2, 2)
-# print(f"b1: {affine1.b}, b1.shape: {np.shape(affine1.b)}") # b1: [0. 0.], b1.shape: (2,)
-# print(f"W2: {affine2.W}, W2.shape: {np.shape(affine2.W)}") # W2: [[1.86755799], [0.95008842]], W2.shape: (2, 1)
-# print(f"b2: {affine2.b}, b2.shape: {np.shape(affine2.b)}") # b2: [0.], b2.shape: (1,)
+print(f"W1: {affine1.W}, W1.shape: {np.shape(affine1.W)}") # W1: [[1.76405235 0.40015721], [0.97873798 2.2408932 ]], W1.shape: (2, 2)
+print(f"b1: {affine1.b}, b1.shape: {np.shape(affine1.b)}") # b1: [0. 0.], b1.shape: (2,)
+print(f"W2: {affine2.W}, W2.shape: {np.shape(affine2.W)}") # W2: [[1.86755799], [0.95008842]], W2.shape: (2, 1)
+print(f"b2: {affine2.b}, b2.shape: {np.shape(affine2.b)}") # b2: [0.], b2.shape: (1,)
 
 lr = 0.01
 
-for i in range(100):
+for i in range(1):
     print(f"\n==========={i+1}회차===========\n")
     # 순전파
     out = affine1.forward(z) # 첫번째 레이어 예측값 [[y^1_1], [y^1_2]]
@@ -47,6 +52,7 @@ for i in range(100):
     out = mse.forward(out, t) # 손실값 Loss
     print(f"out(loss): {out}, shape: {np.shape(out)}") # out: 3.229051646341373, out.shape: ()
 
+    print("============구분분==============")
     # 역전파
     dout = np.ones(1,) # dL/dL
     dout = mse.backward(dout) # dL/dy^2_1

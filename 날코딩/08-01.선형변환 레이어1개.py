@@ -1,6 +1,11 @@
 import numpy as np
 
 from common.layers import Affine, MeanSquaredError
+'''
+data -> 선형 변환(node 1) -> 손실함수
+z = [1,1]
+t = 0
+'''
 
 np.random.seed(0)
 

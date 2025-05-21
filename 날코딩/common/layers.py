@@ -104,3 +104,21 @@ class MeanSquaredError:
         # y가 t보다 크면 양수, 작으면 음수 기울기가 됨
         dx = (self.y - self.t) * dout / batch_size
         return dx
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+class Sigmoid:
+    def __init__(self):
+        self.out = None
+
+    def forward(self, x):
+        out = sigmoid(x)
+        # out = 1 / (1 + np.exp(-x))
+        self.out = out
+        return out
+
+    def backward(self, dout):
+        dx = dout * (1.0 - self.out) * self.out
+
+        return dx
