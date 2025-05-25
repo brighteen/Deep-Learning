@@ -41,7 +41,7 @@ total_frames = end_frame - start_frame
 frame_interval = 1
 
 # 결과 저장할 디렉토리 설정
-output_dir = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\results\6.bytesort적용222"
+output_dir = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\results\7.BoTSORT-ReID적용"
 os.makedirs(output_dir, exist_ok=True)
 
 # 색상 설정 (B,G,R)
@@ -174,7 +174,8 @@ for frame_idx in range(start_frame, end_frame, frame_interval):
     roi = frame[roi_y1:roi_y2, roi_x1:roi_x2].copy()
     
     # YOLO로 객체 탐지
-    results = model.track(roi, persist=True, tracker=r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\bytetrack.yaml", iou=0.6)  # persist=True로 추적 활성화
+    # results = model.track(roi, persist=True, tracker=r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\botsort.yaml", iou=0.6)  # persist=True로 추적 활성화
+    results = model.track(roi, persist=True, iou=0.6)  # persist=True로 추적 활성화
     
     # 결과 이미지에 박스와 ID 그리기
     annotated_roi = roi.copy()
