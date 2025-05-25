@@ -175,7 +175,7 @@ def detect_video_frame_with_tiles(video_path, model_path, output_path, frame_num
 # 경로 설정
 video_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\0_8_IPC1_20221105100432.mp4"
 model_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\best.pt"
-output_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\datas\tile_based_detection.jpg"
+output_path = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0524_폐사체데이터증강\results\tile_based_detection.jpg"
 
 # 타일 기반 객체 탐지 실행
 detect_video_frame_with_tiles(
