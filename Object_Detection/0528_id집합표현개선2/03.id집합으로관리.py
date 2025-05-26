@@ -41,7 +41,7 @@ total_frames = end_frame - start_frame
 frame_interval = 1
 
 # 결과 저장할 디렉토리 설정
-output_dir = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\results\7.BoTSORT-ReID적용"
+output_dir = r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\results\99.아니왜정렬안되냐"
 os.makedirs(output_dir, exist_ok=True)
 
 # 색상 설정 (B,G,R)
@@ -174,8 +174,7 @@ for frame_idx in range(start_frame, end_frame, frame_interval):
     roi = frame[roi_y1:roi_y2, roi_x1:roi_x2].copy()
     
     # YOLO로 객체 탐지
-    # results = model.track(roi, persist=True, tracker=r"C:\Users\brigh\Documents\GitHub\Deep-Learning\Object_Detection\0528_id집합표현개선2\botsort.yaml", iou=0.6)  # persist=True로 추적 활성화
-    results = model.track(roi, persist=True, iou=0.6)  # persist=True로 추적 활성화
+    results = model.track(roi, persist=True, conf=0.7, iou=0.6)  # persist=True로 추적 활성화
     
     # 결과 이미지에 박스와 ID 그리기
     annotated_roi = roi.copy()
@@ -224,7 +223,7 @@ for frame_idx in range(start_frame, end_frame, frame_interval):
                         
                         # ID 집합 정보를 텍스트로 표시
                         if len(id_set) > 1:  # 집합에 여러 ID가 있는 경우
-                            text = f"ID: {main_id}/{id_set}"
+                            text = f"ID: {main_id}:{id_set}"
                         else:  # 집합에 하나의 ID만 있는 경우 (자기 자신)
                             text = f"ID: {main_id}"
                             
@@ -255,7 +254,7 @@ for frame_idx in range(start_frame, end_frame, frame_interval):
                     
                     # ID 표시
                     if len(id_set) > 1:  # 집합에 여러 ID가 있는 경우
-                        text = f"ID: {main_id}/{id_set}"
+                        text = f"ID: {main_id}:{id_set}"
                     else:  # 집합에 하나의 ID만 있는 경우
                         text = f"ID: {id}"
                     
@@ -279,7 +278,7 @@ for frame_idx in range(start_frame, end_frame, frame_interval):
             id_set = format_id_set(id_set, main_id)
             
             if len(id_set) > 1:  # 집합에 여러 ID가 있는 경우
-                text = f"ID: {main_id}/{id_set} (Lost)"
+                text = f"ID: {main_id}:{id_set} (Lost)"
             else:  # 집합에 하나의 ID만 있는 경우
                 text = f"ID: {disappeared_id} (Lost)"
                 
