@@ -3,7 +3,7 @@ import numpy as np
 from common.layers import Affine, MeanSquaredError
 
 '''
-data -> 선형 변환 1(node 3) -> 선형 변환 2(node 2) -> 선형 변환(node 1) -> 손실함수
+data(2,1) -> 선형 변환 1(node 3) -> 선형 변환 2(node 2) -> 선형 변환(node 1) -> 손실함수
 z = [1,1]
 t = 0
 '''
