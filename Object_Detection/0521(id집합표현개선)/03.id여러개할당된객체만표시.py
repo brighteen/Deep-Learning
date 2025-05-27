@@ -18,7 +18,7 @@ class IDManager:
         self.all_detected_ids = set()  # 이전에 탐지된 모든 ID
         
         # 설정
-        self.distance_threshold = 11  # 같은 객체로 판단할 최대 거리
+        self.distance_threshold = 20  # 같은 객체로 판단할 최대 거리
     
     def update(self, detected_objects):
         """
@@ -185,6 +185,7 @@ class IDManager:
             return False
 
 def main():
+    
     # 현재 스크립트 파일의 경로 가져오기
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -245,16 +246,18 @@ def main():
     id_manager = IDManager()
     
     # 탐지 설정
-    conf_threshold = 0.7
+    conf_threshold = 0.3
     
     # 시간 제한 설정 (1분)
     start_time = time.time()
-    duration = 1200  # 1200초 (20분)
+    duration = 1200
+    # duration = 30
     
     # 프레임 카운터 및 스킵 설정
     frame_count = 0
     processed_frames = 0
-    frame_skip = 10  # 30프레임마다 1프레임만 처리
+    # frame_skip = 10
+    frame_skip = 5
     
     # 관심 영역 설정 (필요에 따라 수정)
     roi_y1, roi_y2 = 800, 1600  # 세로 범위
@@ -342,7 +345,13 @@ def main():
             chicks_idx = 0  # 대부분의 경우 클래스 인덱스가 0부터 시작
         
         # 객체 탐지 (YOLOv8 추적 모드 사용)
-        results = model.track(roi_frame, conf=conf_threshold, persist=True, classes=[chicks_idx])[0]
+        results = model.track(
+            roi_frame, 
+            conf=conf_threshold, 
+            persist=True, 
+            classes=[chicks_idx],
+            iou=0.5,
+            )[0]
         
         # 결과 추출
         boxes = results.boxes.xyxy.cpu().tolist() if hasattr(results.boxes, 'xyxy') else []
@@ -362,6 +371,14 @@ def main():
             if obj_id != -1:
                 display_id = id_manager.get_display_id(obj_id)
                 id_set = id_manager.get_id_set(obj_id)
+
+                # 디버깅 정보 출력
+                center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+                
+                if len(id_set) > 1:
+                    print(f"빨간 객체 - 위치: ({center_x}, {center_y}), ID집합: {id_set}")
+                else:
+                    print(f"녹색 객체 - 위치: ({center_x}, {center_y}), ID: {obj_id}")
                 
                 # ID 집합 크기에 따라 바운딩 박스 색상 결정
                 if len(id_set) > 1:
