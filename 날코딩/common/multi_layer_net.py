@@ -30,6 +30,11 @@ class MultiLayerNet:
         self.weight_decay_lambda = weight_decay_lambda
         self.params = {}
 
+        print("Initialize!!")
+        print(f"[debug] input_size: {self.input_size}, hidden_size_list: {self.hidden_size_list}, output_size: {self.output_size}")
+        print(f"[debug] hidden_size_list: {self.hidden_size_list}, hidden_layer_num: {self.hidden_layer_num}")
+        print(f"[debug] activation: {activation}, weight_init_std: {weight_init_std}, weight_decay_lambda: {self.weight_decay_lambda}")
+
         # 가중치 초기화
         self.__init_weight(weight_init_std)
 
@@ -45,8 +50,12 @@ class MultiLayerNet:
         self.layers['Affine' + str(idx)] = Affine(self.params['W' + str(idx)],
             self.params['b' + str(idx)])
 
+        print(f"[debug] layers: {self.layers}")
+
         #self.last_layer = SoftmaxWithLoss()
         self.last_layer = MeanSquaredError()
+
+        print(f"[debug] last_layer: {self.last_layer}")
 
     def __init_weight(self, weight_init_std):
         """가중치 초기화
@@ -67,10 +76,13 @@ class MultiLayerNet:
             self.params['W' + str(idx)] = scale * np.random.randn(all_size_list[idx-1], all_size_list[idx])
             self.params['b' + str(idx)] = np.zeros(all_size_list[idx])
 
+        print("\nWeights and biases initialized.")
+        print(f"[debug] params: {self.params}")
+        print(f"[debug] params.keys(): {self.params.keys()}")
+
     def predict(self, x):
         for layer in self.layers.values():
             x = layer.forward(x)
-
         return x
 
     def loss(self, x, t):
