@@ -1,6 +1,6 @@
 import numpy as np
 
-from common.layers import Affine, MeanSquaredError
+from 날코딩.common.layers import Affine, MeanSquaredError
 '''
 data -> 선형 변환 1(node 2) -> 선형 변환 2(node 1) -> 손실함수
 z = [1,1]

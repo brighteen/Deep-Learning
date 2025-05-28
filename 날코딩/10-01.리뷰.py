@@ -1,5 +1,5 @@
 import numpy as np
-from common.layers import Affine, MeanSquaredError, Sigmoid, Relu
+from 날코딩.common.layers import Affine, MeanSquaredError, Sigmoid, Relu
 
 np.random.seed(0)
 z = np.array([[1,1],

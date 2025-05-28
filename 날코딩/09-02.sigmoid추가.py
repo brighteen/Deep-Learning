@@ -1,4 +1,4 @@
-from common.layers import Sigmoid
+from 날코딩.common.layers import Sigmoid
 
 import numpy as np
 
@@ -35,7 +35,7 @@ data -> 선형 변환 1(node 2) -> 비선형 변환(sigmoid) -> 선형 변환 2(
 # print(f"\nsigmoid.backward(dout): \n{dout}, \nshape: {dout.shape}")
 
 
-from common.layers import Affine, MeanSquaredError
+from 날코딩.common.my_layers import Affine, MeanSquaredError
 
 z = np.array([0,0])
 # print(f"z: {z}, shape: {z.shape}")
