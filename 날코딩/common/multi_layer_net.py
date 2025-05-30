@@ -12,11 +12,11 @@ class MultiLayerNet:
 
     Parameters
     ----------
-    input_size : 입력 크기（MNIST의 경우엔 784）
-    hidden_size_list : 각 은닉층의 뉴런 수를 담은 리스트（e.g. [100, 100, 100]）
-    output_size : 출력 크기（MNIST의 경우엔 10）
+    input_size : 입력 크기 (MNIST의 경우엔 784)
+    hidden_size_list : 각 은닉층의 뉴런 수를 담은 리스트 (e.g. [100, 100, 100])
+    output_size : 출력 크기 (MNIST의 경우엔 10)
     activation : 활성화 함수 - 'relu' 혹은 'sigmoid'
-    weight_init_std : 가중치의 표준편차 지정（e.g. 0.01）
+    weight_init_std : 가중치의 표준편차 지정 (e.g. 0.01)
         'relu'나 'he'로 지정하면 'He 초깃값'으로 설정
         'sigmoid'나 'xavier'로 지정하면 'Xavier 초깃값'으로 설정
     weight_decay_lambda : 가중치 감소(L2 법칙)의 세기
@@ -31,7 +31,7 @@ class MultiLayerNet:
         self.params = {}
 
         print("\nInitialize!!")
-        print(f"[debug] input_size: {self.input_size}, output_size: {self.output_size}, hidden_size_list: {self.hidden_size_list}")
+        print(f"[debug] input_size: {self.input_size}, output_size: {self.output_size}")
         print(f"[debug] hidden_size_list: {self.hidden_size_list}, hidden_layer_num: {self.hidden_layer_num}")
         print(f"[debug] activation: {activation}, weight_init_std: {weight_init_std}, weight_decay_lambda: {self.weight_decay_lambda}")
 
@@ -62,7 +62,7 @@ class MultiLayerNet:
         
         Parameters
         ----------
-        weight_init_std : 가중치의 표준편차 지정（e.g. 0.01）
+        weight_init_std : 가중치의 표준편차 지정 (e.g. 0.01)
             'relu'나 'he'로 지정하면 'He 초깃값'으로 설정
             'sigmoid'나 'xavier'로 지정하면 'Xavier 초깃값'으로 설정
         """
