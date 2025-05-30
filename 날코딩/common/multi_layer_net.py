@@ -40,6 +40,7 @@ class MultiLayerNet:
 
         # 계층 생성
         activation_layer = {'sigmoid': Sigmoid, 'relu': Relu}
+        print(f"[debug] activation_layer: {activation_layer}")
         self.layers = OrderedDict()
         for idx in range(1, self.hidden_layer_num+1):
             self.layers['Affine' + str(idx)] = Affine(self.params['W' + str(idx)],
@@ -79,6 +80,7 @@ class MultiLayerNet:
         print("\nWeights and biases initialized.")
         print(f"[debug] params: {self.params}")
         print(f"[debug] params.keys(): {self.params.keys()}")
+        print(f"[debug] scale: {scale}")
 
     def predict(self, x):
         for layer in self.layers.values():
