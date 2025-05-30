@@ -40,9 +40,9 @@ XOR_network = MultiLayerNet(input_size=input_size,
                             weight_init_std=weight_init_std
                             )
 
-print(f"\n네트워크: {XOR_network}")
-print(f"파라미터 정보: {XOR_network.params}")
-print(f"파라미터 이름: {XOR_network.params.keys()}")
+# print(f"\n네트워크: {XOR_network}")
+# print(f"파라미터 정보: {XOR_network.params}")
+# print(f"파라미터 이름: {XOR_network.params.keys()}")
 
 # 가중치와 편향 정보 출력
 # print(f"\nW1: {XOR_network.params['W1']}, shape: {np.shape(XOR_network.params['W1'])}")
@@ -50,9 +50,9 @@ print(f"파라미터 이름: {XOR_network.params.keys()}")
 # print(f"W2: {XOR_network.params['W2']}, shape: {np.shape(XOR_network.params['W2'])}")
 # print(f"b2: {XOR_network.params['b2']}, shape: {np.shape(XOR_network.params['b2'])}")
 
-print(f"\n레이어 정보: {XOR_network.layers}")
-print(f"마지막 레이어 정보: {XOR_network.last_layer}")
-print("---"*20)
+# print(f"\n레이어 정보: {XOR_network.layers}")
+# print(f"마지막 레이어 정보: {XOR_network.last_layer}")
+# print("---"*20)
 
 # 가중치와 편향 정보 출력2
 # print(f"\nXOR_network.layers['Affine1']W: {XOR_network.layers['Affine1'].W}, shape: {np.shape(XOR_network.layers['Affine1'].W)}")
@@ -61,10 +61,10 @@ print("---"*20)
 # print(f"XOR_network.layers['Affine2']b: {XOR_network.layers['Affine2'].b}, shape: {np.shape(XOR_network.layers['Affine2'].b)}")
 
 # 예측
-prediction = XOR_network.predict(X) # 모든 전파 수행
-print(f"\n예측값 y^out: \n{prediction}, shape: {np.shape(prediction)}")
-loss = XOR_network.loss(X, y)
-print(f"\n손실 함수의 값: {loss}")
+# prediction = XOR_network.predict(X) # 모든 전파 수행
+# print(f"\n예측값 y^out: \n{prediction}, shape: {np.shape(prediction)}")
+# loss = XOR_network.loss(X, y)
+# print(f"\n손실 함수의 값: {loss}")
 
 #각 층의 전파 보기
 # out = XOR_network.layers['Affine1'].forward(X)
@@ -76,24 +76,24 @@ print(f"\n손실 함수의 값: {loss}")
 # loss = XOR_network.last_layer.forward(out, y)
 # print(f"\n손실값 Loss: \n{loss}, shape: {np.shape(loss)}")
 
-iters_num = 100001
-learning_rate = 0.01
-for i in range(1, iters_num):
-    # 기울기 계산
-    grad = XOR_network.gradient(X, y) # 오차역전파 방식(훨씬 빠름)
+# iters_num = 100001
+# learning_rate = 0.01
+# for i in range(1, iters_num):
+#     # 기울기 계산
+#     grad = XOR_network.gradient(X, y) # 오차역전파 방식(훨씬 빠름)
 
-    # 매개변수 갱신
-    for key in XOR_network.params.keys():
-        XOR_network.params[key] -= learning_rate * grad[key]
+#     # 매개변수 갱신
+#     for key in XOR_network.params.keys():
+#         XOR_network.params[key] -= learning_rate * grad[key]
 
-    if i % 20000 == 0:
-        print(f"\n{i}번째 기울기: {grad}\n갱신된 파라미터 값: {XOR_network.params}")
+#     if i % 20000 == 0:
+#         print(f"\n{i}번째 기울기: {grad}\n갱신된 파라미터 값: {XOR_network.params}")
 
-        predict = XOR_network.predict(X)
-        print(f"\n{i}번째 예측값 y^out: \n{predict}, shape: {np.shape(predict)}")
-        # 손실 함수 값 갱신
-        loss = XOR_network.loss(X, y)
-        print(f"{i}번째 손실 함수 값: {loss}")
+#         predict = XOR_network.predict(X)
+#         print(f"\n{i}번째 예측값 y^out: \n{predict}, shape: {np.shape(predict)}")
+#         # 손실 함수 값 갱신
+#         loss = XOR_network.loss(X, y)
+#         print(f"{i}번째 손실 함수 값: {loss}")
 
 
-print(f"십만번 반복 후 예측값 y^out: \n{np.round(predict, 0)}, shape: {np.shape(predict)}")
+# print(f"십만번 반복 후 예측값 y^out: \n{np.round(predict, 0)}, shape: {np.shape(predict)}")

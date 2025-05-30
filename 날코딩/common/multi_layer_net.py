@@ -30,8 +30,8 @@ class MultiLayerNet:
         self.weight_decay_lambda = weight_decay_lambda
         self.params = {}
 
-        print("Initialize!!")
-        print(f"[debug] input_size: {self.input_size}, hidden_size_list: {self.hidden_size_list}, output_size: {self.output_size}")
+        print("\nInitialize!!")
+        print(f"[debug] input_size: {self.input_size}, output_size: {self.output_size}, hidden_size_list: {self.hidden_size_list}")
         print(f"[debug] hidden_size_list: {self.hidden_size_list}, hidden_layer_num: {self.hidden_layer_num}")
         print(f"[debug] activation: {activation}, weight_init_std: {weight_init_std}, weight_decay_lambda: {self.weight_decay_lambda}")
 
