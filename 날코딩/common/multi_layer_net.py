@@ -30,17 +30,17 @@ class MultiLayerNet:
         self.weight_decay_lambda = weight_decay_lambda
         self.params = {}
 
-        print("\nInitialize!!")
-        print(f"[debug] input_size: {self.input_size}, output_size: {self.output_size}")
-        print(f"[debug] hidden_size_list: {self.hidden_size_list}, hidden_layer_num: {self.hidden_layer_num}")
-        print(f"[debug] activation: {activation}, weight_init_std: {weight_init_std}, weight_decay_lambda: {self.weight_decay_lambda}")
+        # print("\nInitialize!!")
+        # print(f"[debug] input_size: {self.input_size}, output_size: {self.output_size}")
+        # print(f"[debug] hidden_size_list: {self.hidden_size_list}, hidden_layer_num: {self.hidden_layer_num}")
+        # print(f"[debug] activation: {activation}, weight_init_std: {weight_init_std}, weight_decay_lambda: {self.weight_decay_lambda}")
 
         # 가중치 초기화
         self.__init_weight(weight_init_std)
 
         # 계층 생성
         activation_layer = {'sigmoid': Sigmoid, 'relu': Relu}
-        print(f"[debug] activation_layer: {activation_layer}")
+        # print(f"[debug] activation_layer: {activation_layer}")
         self.layers = OrderedDict()
         for idx in range(1, self.hidden_layer_num+1):
             self.layers['Affine' + str(idx)] = Affine(self.params['W' + str(idx)],
@@ -51,12 +51,12 @@ class MultiLayerNet:
         self.layers['Affine' + str(idx)] = Affine(self.params['W' + str(idx)],
             self.params['b' + str(idx)])
 
-        print(f"[debug] layers: {self.layers}")
+        # print(f"[debug] layers: {self.layers}")
 
         #self.last_layer = SoftmaxWithLoss()
         self.last_layer = MeanSquaredError()
 
-        print(f"[debug] last_layer: {self.last_layer}")
+        # print(f"[debug] last_layer: {self.last_layer}")
 
     def __init_weight(self, weight_init_std):
         """가중치 초기화
@@ -77,10 +77,10 @@ class MultiLayerNet:
             self.params['W' + str(idx)] = scale * np.random.randn(all_size_list[idx-1], all_size_list[idx])
             self.params['b' + str(idx)] = np.zeros(all_size_list[idx])
 
-        print("\nWeights and biases initialized.")
-        print(f"[debug] params: {self.params}")
-        print(f"[debug] params.keys(): {self.params.keys()}")
-        print(f"[debug] scale: {scale}")
+        # print("\nWeights and biases initialized.")
+        # print(f"[debug] params: {self.params}")
+        # print(f"[debug] params.keys(): {self.params.keys()}")
+        # print(f"[debug] scale: {scale}")
 
     def predict(self, x):
         for layer in self.layers.values():
