@@ -53,8 +53,8 @@ class MultiLayerNet:
 
         # print(f"[debug] layers: {self.layers}")
 
-        #self.last_layer = SoftmaxWithLoss()
-        self.last_layer = MeanSquaredError()
+        self.last_layer = SoftmaxWithLoss()
+        # self.last_layer = MeanSquaredError()
 
         # print(f"[debug] last_layer: {self.last_layer}")
 
