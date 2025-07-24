@@ -137,8 +137,9 @@ pip install numpy opencv-python matplotlib jupyter pandas scikit-learn ultralyti
 ### 즉시 시작 가능한 작업 (Quick Start Tasks)
 1. **환경 설정**: `pip install -r requirements.txt`
 2. **환경 테스트**: `python test_environment.py`
-3. **예제 실행**: 각 디렉토리의 노트북 및 Python 파일 실행
-4. **문서 개선**: 마크다운 파일들의 내용 보강 및 번역
+3. **저장소 데모**: `python demo.py` - 전체 기능 둘러보기
+4. **예제 실행**: 각 디렉토리의 노트북 및 Python 파일 실행
+5. **문서 개선**: 마크다운 파일들의 내용 보강 및 번역
 
 ## 📄 License | 라이선스
 
